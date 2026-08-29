@@ -100,8 +100,11 @@ import reads that back. All Notes shows a `done/total` count per note.
 - **Note bodies are encrypted with AES-GCM** (CryptoKit, 256-bit). Titles,
   colours and timestamps stay in plaintext so lists render without unsealing
   every row.
-- No account, no server, no analytics, no telemetry, no third-party SDKs. The
-  app makes no network calls at all.
+- No account, no server, no analytics, no telemetry, no tracking SDKs.
+- **One network request, ever:** Sparkle fetches the appcast to see whether a
+  newer version exists. Nothing about your notes is sent — it is a plain GET of
+  a public XML file. Turn it off with *Check automatically* in the pill's menu,
+  and it never fires again.
 - No Accessibility permission, no Screen Recording, no system permissions.
 
 Verify it yourself:
@@ -117,14 +120,44 @@ Requires the Swift toolchain from Command Line Tools (**Xcode is not needed**)
 and macOS 15+.
 
 ```sh
-./build.sh              # release build → build/Noty.app
-./build.sh debug        # fast, unoptimised
-./build.sh release run  # build, then relaunch
+./scripts/fetch-sparkle.sh   # once — pulls the Sparkle binary framework
+./build.sh                   # release build → build/Noty.app
+./build.sh debug             # fast, unoptimised
+./build.sh release run       # build, then relaunch
 open build/Noty.app
 ```
 
 `build.sh` drives `swiftc` directly over `Sources/*.swift`, assembles the
-`.app` bundle around `Info.plist`, and ad-hoc signs it.
+`.app` bundle around `Info.plist`, embeds Sparkle, and signs it.
+
+Sparkle is optional. Without `Sparkle/Sparkle.framework` the app still builds —
+`Updater.swift` compiles to a stub and the update menu says so.
+
+### Releasing
+
+```sh
+git tag v1.0.1 && git push origin v1.0.1
+```
+
+That fires `.github/workflows/release.yml`, which builds the app, packages a
+DMG, signs it with the EdDSA key, writes `appcast.xml`, publishes a GitHub
+Release and commits the appcast so installed copies can see the update.
+
+It needs one repository secret, **`SPARKLE_PRIVATE_KEY`** — the contents of the
+key `scripts/fetch-sparkle.sh`'s toolchain generated. The matching public key is
+already in `Info.plist` as `SUPublicEDKey`; an update signed by any other key is
+refused by the installed app.
+
+To build a DMG by hand:
+
+```sh
+./build.sh release && ./scripts/make-dmg.sh 1.0.1
+```
+
+**Signing note.** Sparkle ships signed by its own team, and dyld refuses to load
+a framework whose Team ID differs from the process — so `build.sh` re-signs the
+framework (innermost bundle first) with the same identity as the app. Set
+`CODESIGN_IDENTITY` to use a Developer ID instead of an ad-hoc signature.
 
 ## Layout
 

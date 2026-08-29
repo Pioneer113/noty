@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Noty</title>
+    <link>https://raw.githubusercontent.com/aimen08/noty/main/appcast.xml</link>
+    <description>Sticky notes that live at the edge of your screen.</description>
+    <language>en</language>
+    <item>
+      <title>1.0.0</title>
+      <pubDate>Sat, 29 Aug 2026 21:22:47 +0000</pubDate>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<ul><li>First release.</li></ul>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.0/Noty-1.0.0.dmg" type="application/octet-stream" sparkle:edSignature="wf7x+IslW/vuy+cT8+WaofwzQN4nDlwU0gvJIS2HgAsJ5Q6hCJlNpbQMK4DkvXwqJIyYDIW3NmtOsphjaKmCAA==" length="1670938" />
+    </item>
+  </channel>
+</rss>

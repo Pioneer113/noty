@@ -318,6 +318,17 @@ final class DeckController: NSObject {
         leftEdge.state = Settings.deckOnLeftEdge ? .on : .off
         menu.addItem(leftEdge)
 
+        let updates = NSMenuItem(title: "Check for Updates…",
+                                 action: #selector(AppDelegate.checkForUpdates), keyEquivalent: "")
+        menu.addItem(updates)
+
+        let autoUpdate = NSMenuItem(title: "Check automatically",
+                                    action: #selector(AppDelegate.toggleAutoUpdates), keyEquivalent: "")
+        autoUpdate.state = Updater.shared.automaticallyChecks ? .on : .off
+        autoUpdate.isEnabled = Updater.available
+        menu.addItem(autoUpdate)
+        menu.addItem(.separator())
+
         let login = NSMenuItem(title: "Launch at login",
                                action: #selector(AppDelegate.toggleLaunchAtLogin), keyEquivalent: "")
         login.state = Settings.launchAtLogin ? .on : .off

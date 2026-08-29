@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. 1.0.1'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Work out the version
+        id: v
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION"    >> "$GITHUB_OUTPUT"
+          # a monotonic build number Sparkle can compare
+          echo "build=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch Sparkle
+        run: ./scripts/fetch-sparkle.sh
+
+      - name: Build
+        env:
+          MARKETING_VERSION: ${{ steps.v.outputs.version }}
+          BUILD_NUMBER: ${{ steps.v.outputs.build }}
+        run: |
+          ./build.sh release
+          codesign --verify --deep --strict build/Noty.app
+
+      - name: Package the disk image
+        run: ./scripts/make-dmg.sh "${{ steps.v.outputs.version }}"
+
+      - name: Sign the update and write the appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          VERSION: ${{ steps.v.outputs.version }}
+          BUILD: ${{ steps.v.outputs.build }}
+        run: |
+          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+            echo "::error::SPARKLE_PRIVATE_KEY secret is not set — updates cannot be signed."
+            exit 1
+          fi
+          KEYFILE="$(mktemp)"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEYFILE"
+          NOTES="$(git log -1 --pretty=%B | python3 -c 'import html,sys; print("<p>"+html.escape(sys.stdin.read().strip()).replace(chr(10),"<br>")+"</p>")')" \
+          ./scripts/make-appcast.sh \
+            "build/Noty-${VERSION}.dmg" \
+            "$KEYFILE" \
+            "https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ steps.v.outputs.tag }}/Noty-${VERSION}.dmg"
+          rm -f "$KEYFILE"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.v.outputs.tag }}" \
+            "build/Noty-${{ steps.v.outputs.version }}.dmg" \
+            --title "Noty ${{ steps.v.outputs.version }}" \
+            --generate-notes \
+            --latest || \
+          gh release upload "${{ steps.v.outputs.tag }}" \
+            "build/Noty-${{ steps.v.outputs.version }}.dmg" --clobber
+
+      - name: Commit the appcast so Sparkle can see the update
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add appcast.xml
+          if git diff --cached --quiet; then
+            echo "appcast unchanged"
+          else
+            git commit -m "Release ${{ steps.v.outputs.version }}: update appcast"
+            git push origin HEAD:main
+          fi

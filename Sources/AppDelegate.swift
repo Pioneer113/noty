@@ -67,6 +67,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func exportStickies()  { Transfer.export(.stickies,  notes: NoteStore.shared.notes) }
     @objc func importStickies()  { Transfer.importFiles() }
 
+    @objc func checkForUpdates() { Updater.shared.checkForUpdates() }
+
+    @objc func toggleAutoUpdates() {
+        Updater.shared.automaticallyChecks.toggle()
+    }
+
     @objc func quit() { NSApp.terminate(nil) }
 
     @objc func showAbout() {
@@ -80,7 +86,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         In a note — Esc closes, ⌘F finds, ⌘. cycles colour, ⌘⌫ deletes.
 
         Notes are stored locally in an SQLite database; bodies are encrypted \
-        with AES-GCM. Nothing leaves this Mac.
+        with AES-GCM. Your notes never leave this Mac — the only network request \
+        the app makes is the update check, which you can switch off.
         """
         a.runModal()
     }
@@ -97,6 +104,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
         appMenu.addItem(withTitle: "About Noty", action: #selector(showAbout), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "New Note", action: #selector(newNote), keyEquivalent: "n")
         appMenu.addItem(withTitle: "All Notes", action: #selector(openAllNotes), keyEquivalent: "a")

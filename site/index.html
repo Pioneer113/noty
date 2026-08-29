@@ -279,14 +279,15 @@ footer p+p{margin-top:8px}
     <div class="head">
       <span class="label">Local only</span>
       <h2>Your notes stay on your Mac.</h2>
-      <p>There is no account, no sync, and no server holding your notes — because there is no network code in the app at all.</p>
+      <p>There is no account, no sync, and no server holding your notes. The app makes exactly one kind of network request, and it has nothing to do with your notes.</p>
     </div>
     <div class="cols">
       <ul class="list">
         <li><span class="tick">→</span><div><b>Note bodies are encrypted.</b> <span>AES-GCM via CryptoKit, 256-bit. Titles, colours and timestamps stay readable so lists render without unsealing every row.</span></div></li>
         <li><span class="tick">→</span><div><b>A local SQLite database.</b> <span>In <b>~/Library/Application&nbsp;Support/Noty/</b>. Yours to inspect, back up, or delete.</span></div></li>
         <li><span class="tick">→</span><div><b>No permissions asked.</b> <span>Global shortcuts go through the system hotkey API, which needs no Accessibility access. No Screen Recording either.</span></div></li>
-        <li><span class="tick">→</span><div><b>No analytics, no SDKs.</b> <span>Nothing is measured and nothing phones home.</span></div></li>
+        <li><span class="tick">→</span><div><b>No analytics, no tracking SDKs.</b> <span>Nothing about your notes is measured, logged or transmitted.</span></div></li>
+        <li><span class="tick">→</span><div><b>One request, ever.</b> <span>The updater fetches a public XML file to see whether a newer version exists — a plain GET, no note data attached. Switch off <b>Check automatically</b> and it never fires again.</span></div></li>
       </ul>
       <div>
         <p class="label" style="margin-bottom:12px">Check it yourself</p>

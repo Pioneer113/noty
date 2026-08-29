@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['site/**', 'appcast.xml', '**/*.md']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Sparkle
+        run: ./scripts/fetch-sparkle.sh
+
+      - name: Build
+        run: ./build.sh release
+
+      - name: Verify the bundle
+        run: |
+          test -x build/Noty.app/Contents/MacOS/Noty
+          codesign --verify --deep --strict build/Noty.app
+          /usr/libexec/PlistBuddy -c "Print :SUFeedURL" build/Noty.app/Contents/Info.plist
+          otool -L build/Noty.app/Contents/MacOS/Noty | grep -q Sparkle
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Noty-app
+          path: build/Noty.app

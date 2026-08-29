@@ -14,5 +14,12 @@
 	<key>LSUIElement</key>             <true/>
 	<key>NSHighResolutionCapable</key> <true/>
 	<key>NSHumanReadableCopyright</key><string>Local-only sticky notes.</string>
+
+	<!-- Sparkle. The appcast is the only URL the app ever contacts. -->
+	<key>SUFeedURL</key>               <string>https://raw.githubusercontent.com/aimen08/noty/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>           <string>Ro7FWbi4x44GeJK43X3oI1JhlGwV0JHj6/pqONbLKWs=</string>
+	<key>SUEnableAutomaticChecks</key> <true/>
+	<key>SUScheduledCheckInterval</key><integer>86400</integer>
+	<key>SUAllowsAutomaticUpdates</key><false/>
 </dict>
 </plist>
