@@ -60,6 +60,8 @@ jobs:
           fi
           KEYFILE="$(mktemp)"
           printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEYFILE"
+          echo "key bytes: $(wc -c < "$KEYFILE")"
+          test -x ./Sparkle/bin/sign_update
           NOTES="$(git log -1 --pretty=%B | python3 -c 'import html,sys; print("<p>"+html.escape(sys.stdin.read().strip()).replace(chr(10),"<br>")+"</p>")')" \
           ./scripts/make-appcast.sh \
             "build/Noty-${VERSION}.dmg" \

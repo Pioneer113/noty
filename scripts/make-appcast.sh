@@ -9,7 +9,10 @@ VERSION="${VERSION:?set VERSION}"
 BUILD="${BUILD:?set BUILD}"
 NOTES="${NOTES:-}"
 
-SIGNED=$("$ROOT/Sparkle/bin/sign_update" "$DMG" "$KEYFILE")   # sparkle:edSignature="…" length="…"
+# --ed-key-file is required: passing the key as a bare second argument makes
+# sign_update read that slot as a signature to verify and fall back to the
+# Keychain, which works on a dev machine and silently cannot work in CI.
+SIGNED=$("$ROOT/Sparkle/bin/sign_update" --ed-key-file "$KEYFILE" "$DMG")
 PUBDATE=$(LC_ALL=C date -u "+%a, %d %b %Y %H:%M:%S +0000")
 
 cat > "$ROOT/appcast.xml" <<XML
