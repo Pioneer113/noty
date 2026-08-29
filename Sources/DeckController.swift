@@ -222,7 +222,7 @@ final class DeckController: NSObject {
             case .fan where idle > Settings.fanIdleTimeout:
                 self.collapse()
             case .expanded where idle > Settings.noteIdleTimeout:
-                self.collapse()
+                self.dismiss()
             default: break
             }
         }
@@ -277,7 +277,21 @@ final class DeckController: NSObject {
         panel.makeKeyAndOrderFront(nil)
     }
 
+    /// Closing a note steps back to the deck — the tabs stay where they were.
+    /// Only leaving the deck entirely puts it back to sleep.
     func collapse() {
+        if model.state.expandedID != nil {
+            setState(.fan)
+            NSApp.deactivate()
+            // If the pointer is already away from the edge, the deck follows it
+            // shut on the next poll rather than hanging around.
+        } else {
+            setState(.rest)
+        }
+    }
+
+    /// Dismiss the whole deck, note and tabs together.
+    func dismiss() {
         let wasExpanded = model.state.expandedID != nil
         setState(.rest)
         if wasExpanded { NSApp.deactivate() }
@@ -343,7 +357,7 @@ final class DeckController: NSObject {
         outsideMonitor = NSEvent.addGlobalMonitorForEvents(
             matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self, self.model.state.expandedID != nil else { return }
-            DispatchQueue.main.async { self.collapse() }
+            DispatchQueue.main.async { self.dismiss() }
         }
     }
 

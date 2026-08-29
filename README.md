@@ -62,7 +62,7 @@ Inside a note:
 
 | | |
 |---|---|
-| `Esc` | close (or dismiss the find bar) |
+| `Esc` | close the note, back to the tabs (or dismiss the find bar) |
 | `⌘F` | find in note |
 | `⌘.` | cycle its colour |
 | `⌘T` | turn the current line into a task, or strip the checkbox off |
@@ -97,8 +97,11 @@ import reads that back. All Notes shows a `done/total` count per note.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
+- **Closing a note steps back to the deck.** Esc, Close, archiving or deleting
+  leaves the tabs where they were; only moving away from the edge puts the deck
+  back to sleep. Clicking in another app dismisses the whole thing.
 - **Tidies itself away.** A fan left untouched collapses after 4 seconds; an open
-  note closes after a minute idle. Clicking anywhere outside a note closes it too.
+  note after a minute idle.
 - **Export** — Markdown (one `.md` per note), plain text (one `.txt` per note),
   a single document, or a `.stickies` archive that preserves colours, archived
   state and dates. **Import** reads `.stickies` back, and will also take loose

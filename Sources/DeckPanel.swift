@@ -76,6 +76,11 @@ enum DeckGeom {
     /// open a wedge of background between them and the edge they are stuck to.
     static let bleed: CGFloat = 14
 
+    /// Everything leans the same way — a deck of tabs at matching angles reads as
+    /// deliberate, where per-note angles just look scattered.
+    static let leanDegrees: Double = 3.0
+    static func lean(onRight: Bool) -> Double { onRight ? -leanDegrees : leanDegrees }
+
     static let tabFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
     static let tabTracking: CGFloat = 0.4
 

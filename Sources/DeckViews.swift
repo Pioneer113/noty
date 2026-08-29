@@ -275,7 +275,7 @@ struct VerticalTab: View {
                     .frame(width: DeckGeom.tabWidth, height: strip)
             }
             .frame(width: DeckGeom.tabWidth + DeckGeom.bleed, height: height, alignment: .top)
-            .rotationEffect(.degrees(note.lean), anchor: onRight ? .trailing : .leading)
+            .rotationEffect(.degrees(DeckGeom.lean(onRight: onRight)), anchor: onRight ? .trailing : .leading)
             .offset(x: onRight ? DeckGeom.bleed : -DeckGeom.bleed)
             .frame(width: DeckGeom.tabWidth)
             .contentShape(Rectangle())
@@ -303,7 +303,7 @@ struct ChipTab: View {
                 .frame(width: DeckGeom.chipWidth, height: DeckGeom.chipHeight)
                 .shadow(color: .black.opacity(isOpen ? 0.34 : 0.22), radius: isOpen ? 8 : 5,
                         x: onRight ? -2 : 2, y: 1)
-                .rotationEffect(.degrees(note.lean * 0.6), anchor: onRight ? .trailing : .leading)
+                .rotationEffect(.degrees(DeckGeom.lean(onRight: onRight) * 0.6), anchor: onRight ? .trailing : .leading)
                 .offset(x: onRight ? DeckGeom.bleed / 2 : -DeckGeom.bleed / 2)
                 .contentShape(Rectangle())
         }

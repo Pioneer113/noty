@@ -119,14 +119,6 @@ struct Note: Identifiable, Hashable {
 
     var displayTitle: String { title.isEmpty ? "New note" : title }
 
-    /// A small, stable lean so a deck looks stuck on by hand rather than printed.
-    /// Derived from the id, so a note keeps the same angle for its whole life.
-    var lean: Double {
-        var h: UInt64 = 5381
-        for b in id.utf8 { h = (h &* 33) &+ UInt64(b) }
-        return (Double(h % 200) / 100.0 - 1.0) * 3.2     // ±3.2°
-    }
-
     /// Completed / total, or nil when the note holds no tasks.
     var taskProgress: (done: Int, total: Int)? {
         var done = 0, total = 0
