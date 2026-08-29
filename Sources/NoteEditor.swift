@@ -280,8 +280,6 @@ struct NoteEditorView: View {
         )
         .clipShape(noteShape)
         .overlay(noteShape.strokeBorder(Color.black.opacity(0.07), lineWidth: 0.5))
-        .rotationEffect(.degrees(DeckGeom.lean(onRight: onRight)), anchor: onRight ? .trailing : .leading)
-        .offset(x: onRight ? DeckGeom.bleed : -DeckGeom.bleed)
         .onAppear {
             text = note.body
             savedAt = note.modified
