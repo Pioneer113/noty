@@ -6,13 +6,13 @@
     <description>Sticky notes that live at the edge of your screen.</description>
     <language>en</language>
     <item>
-      <title>1.0.3</title>
-      <pubDate>Sat, 29 Aug 2026 22:46:01 +0000</pubDate>
-      <sparkle:version>13</sparkle:version>
-      <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
+      <title>1.0.4</title>
+      <pubDate>Sat, 29 Aug 2026 23:00:10 +0000</pubDate>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>1.0.4</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>Lean the whole deck one way, and close a note back to the tabs<br><br>- Every tab, chip and note now leans at the same angle instead of a per-note<br>  random one. Matching angles read as deliberate; scattered ones just looked<br>  like a bug.<br>- Closing a note (Esc, Close, archive, delete) steps back to the deck rather<br>  than dismissing it — the tabs stay where they were, and only leaving the edge<br>  puts the deck to sleep. A click in another app still dismisses the lot.<br>- Screenshots, the demo recording and the site rebuilt against the final look.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
-      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.3/Noty-1.0.3.dmg" type="application/octet-stream" sparkle:edSignature="6rUjdHEY0C98X5ndvrat7+zSYTOS5J3ETv9OQuY+pMIPyGtrzS4pdI1xXP67lx2UTfBqgVzD1AWJaO3Q2KDPDg==" length="1667119" />
+      <description><![CDATA[<p>Set tab labels in the note hand, narrow the tabs, and stop clipping titles<br><br>- Tab labels now use the same face as note bodies, a weight bolder<br>  (Noteworthy Bold, 9.5pt), and follow the handwriting setting.<br>- Tabs narrowed from 36 to 30pt.<br>- Titles no longer clip: the strip was being sized to exactly the measured label<br>  width, so rounding ate the last glyph. The strip is now the label plus 20pt<br>  and the label is drawn inside it with a 12pt inset, leaving real slack. The<br>  measurement also has to use the face the tab actually draws with.<br>- The label is centred on the visible tab rather than on the bled shape, which<br>  was pushing it toward the screen edge.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.4/Noty-1.0.4.dmg" type="application/octet-stream" sparkle:edSignature="a48+rGf3CZTF8RnSLRSSg8DC3WTAkHFotvduIENkOv13mJWz2JpG8YGk9R8Mien+rLKyMSY6w2iekcLv/n5UCg==" length="1666120" />
     </item>
   </channel>
 </rss>
