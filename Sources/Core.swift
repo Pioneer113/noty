@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import AppKit
 import CryptoKit
 
 // MARK: - Paths
@@ -52,16 +53,21 @@ struct NoteColor {
     let dash: Color       // saturated edge dash / colour bar
     let ink: Color        // text colour on paper
 
+    /// Slightly deeper than a highlighter pastel, so a note reads as paper with
+    /// colour in it rather than a tinted white rectangle.
     static let all: [NoteColor] = [
-        NoteColor(name: "Lemon",  paper: hex(0xFFF3B0), dash: hex(0xF2C316), ink: hex(0x3D3312)),
-        NoteColor(name: "Peach",  paper: hex(0xFFDCC2), dash: hex(0xF08A3C), ink: hex(0x43291A)),
-        NoteColor(name: "Rose",   paper: hex(0xFFD3DC), dash: hex(0xE8577A), ink: hex(0x421C26)),
-        NoteColor(name: "Lilac",  paper: hex(0xE3D5FF), dash: hex(0x8B5CF6), ink: hex(0x2E2145)),
-        NoteColor(name: "Sky",    paper: hex(0xCFE8FF), dash: hex(0x2F8FE0), ink: hex(0x18303F)),
-        NoteColor(name: "Mint",   paper: hex(0xC9F0DF), dash: hex(0x18A97B), ink: hex(0x143329)),
-        NoteColor(name: "Sand",   paper: hex(0xEADFC8), dash: hex(0xB08A4A), ink: hex(0x3A2F1D)),
-        NoteColor(name: "Slate",  paper: hex(0xD9E0E8), dash: hex(0x5C7183), ink: hex(0x1F2A33)),
+        NoteColor(name: "Lemon",  paper: hex(0xFCE795), dash: hex(0xE0AD08), ink: hex(0x3A3008)),
+        NoteColor(name: "Peach",  paper: hex(0xFBCFA6), dash: hex(0xE2762A), ink: hex(0x422413)),
+        NoteColor(name: "Rose",   paper: hex(0xFAC4D1), dash: hex(0xDC4570), ink: hex(0x40161F)),
+        NoteColor(name: "Lilac",  paper: hex(0xD9C7FA), dash: hex(0x7C4DEE), ink: hex(0x2A1B44)),
+        NoteColor(name: "Sky",    paper: hex(0xBEDDFA), dash: hex(0x2280D6), ink: hex(0x13293A)),
+        NoteColor(name: "Mint",   paper: hex(0xB4E8D0), dash: hex(0x0E9B6E), ink: hex(0x0F2E23)),
+        NoteColor(name: "Sand",   paper: hex(0xE3D3B4), dash: hex(0xA37B3C), ink: hex(0x372C18)),
+        NoteColor(name: "Slate",  paper: hex(0xCBD6E2), dash: hex(0x4E6579), ink: hex(0x1A242E)),
     ]
+
+    /// A touch darker at the foot of the sheet, the way paper catches light.
+    var paperShade: Color { paper.opacity(1) }
 
     static func at(_ i: Int) -> NoteColor { all[((i % all.count) + all.count) % all.count] }
 
@@ -71,6 +77,19 @@ struct NoteColor {
               green: Double((v >> 8) & 0xFF) / 255,
               blue:  Double(v & 0xFF) / 255,
               opacity: 1)
+    }
+}
+
+// MARK: - Type
+
+enum Ink {
+    /// The hand used on note bodies. Noteworthy Light is the closest thing macOS
+    /// ships to a neat felt-tip; the system face is the fallback and the setting.
+    static func body(_ size: CGFloat) -> NSFont {
+        guard Settings.handwrittenBody else { return .systemFont(ofSize: size) }
+        return NSFont(name: "Noteworthy-Light", size: size + 1.5)
+            ?? NSFont(name: "BradleyHandITCTT-Bold", size: size + 1.5)
+            ?? .systemFont(ofSize: size)
     }
 }
 
@@ -99,6 +118,14 @@ struct Note: Identifiable, Hashable {
     }
 
     var displayTitle: String { title.isEmpty ? "New note" : title }
+
+    /// A small, stable lean so a deck looks stuck on by hand rather than printed.
+    /// Derived from the id, so a note keeps the same angle for its whole life.
+    var lean: Double {
+        var h: UInt64 = 5381
+        for b in id.utf8 { h = (h &* 33) &+ UInt64(b) }
+        return (Double(h % 200) / 100.0 - 1.0) * 1.1     // ±1.1°
+    }
 
     /// Completed / total, or nil when the note holds no tasks.
     var taskProgress: (done: Int, total: Int)? {

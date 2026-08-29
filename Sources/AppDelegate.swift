@@ -61,6 +61,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func biggerText()  { stepFontSize(by: 1.5) }
     @objc func smallerText() { stepFontSize(by: -1.5) }
 
+    @objc func toggleHandwriting() {
+        Settings.handwrittenBody.toggle()
+        deckManager.refreshAll()
+    }
+
     @objc func toggleDeckEdge() {
         Settings.deckOnLeftEdge.toggle()
         deckManager.refreshAll()

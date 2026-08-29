@@ -104,7 +104,8 @@ enum DeckGeom {
     static let editorHeight: CGFloat = 380
     /// The open note runs to the screen edge and covers its own tab, exactly as a
     /// pulled sticky would — so there is no gap between note and deck to tune.
-    static var expandedWidth: CGFloat { max(fanWidth, editorWidth) }
+    /// A little wider than the note so the lean has somewhere to go.
+    static var expandedWidth: CGFloat { max(fanWidth, editorWidth) + 22 }
 
     static func pillHeight(noteCount: Int) -> CGFloat {
         let shown = min(noteCount, maxDashes)

@@ -30,11 +30,10 @@ struct DeckRootView: View {
     }
 
     var body: some View {
-        GeometryReader { geo in
-            let h = geo.size.height
-            let lay = layout(h)
+        let h = max(1, deck.panelHeight)
+        let lay = layout(h)
 
-            ZStack(alignment: onRight ? .topTrailing : .topLeading) {
+        return ZStack(alignment: onRight ? .topTrailing : .topLeading) {
 
                 if deck.fanVisible {
                     FanColumn(deck: deck, controller: controller,
@@ -59,12 +58,12 @@ struct DeckRootView: View {
                         .id(id)
                 }
             }
-            // A GeometryReader pins its content to the top-leading corner and a ZStack
-            // is only as wide as its widest child, so without this the whole deck sits
-            // at the panel's left edge — leaving a dead gap against the screen edge.
-            .frame(width: geo.size.width, height: geo.size.height,
-                   alignment: onRight ? .topTrailing : .topLeading)
-        }
+        // A ZStack is only as wide as its widest child, so it has to be told to fill
+        // the panel — otherwise the deck sits at the panel's left edge with a dead
+        // gap against the screen. Filling from the parent's proposal (rather than a
+        // measured width) keeps it pinned to the edge through a resize.
+        .frame(maxWidth: .infinity, maxHeight: .infinity,
+               alignment: onRight ? .topTrailing : .topLeading)
         .animation(.spring(response: 0.30, dampingFraction: 0.9), value: deck.fanVisible)
         .animation(.easeInOut(duration: 0.22), value: deck.style)
     }
@@ -276,6 +275,7 @@ struct VerticalTab: View {
                     .frame(width: DeckGeom.tabWidth, height: strip)
             }
             .frame(width: DeckGeom.tabWidth, height: height, alignment: .top)
+            .rotationEffect(.degrees(note.lean), anchor: onRight ? .trailing : .leading)
             .contentShape(Rectangle())
         }
         .buttonStyle(TabPressStyle())
@@ -301,6 +301,7 @@ struct ChipTab: View {
                 .frame(width: DeckGeom.chipWidth, height: DeckGeom.chipHeight)
                 .shadow(color: .black.opacity(isOpen ? 0.34 : 0.22), radius: isOpen ? 8 : 5,
                         x: onRight ? -2 : 2, y: 1)
+                .rotationEffect(.degrees(note.lean * 0.6), anchor: onRight ? .trailing : .leading)
                 .contentShape(Rectangle())
         }
         .buttonStyle(TabPressStyle())

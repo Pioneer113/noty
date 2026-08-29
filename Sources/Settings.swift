@@ -35,6 +35,12 @@ enum Settings {
                     forKey: "noteFontSize") }
     }
 
+    /// Note bodies in a hand, the way a sticky note actually looks.
+    static var handwrittenBody: Bool {
+        get { d.object(forKey: "handwrittenBody") as? Bool ?? true }
+        set { d.set(newValue, forKey: "handwrittenBody") }
+    }
+
     /// How long the deck may sit untouched before it tidies itself away.
     static let fanIdleTimeout: TimeInterval = 4
     static let noteIdleTimeout: TimeInterval = 60

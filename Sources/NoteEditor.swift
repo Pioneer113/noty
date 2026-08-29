@@ -140,7 +140,7 @@ struct NoteTextView: NSViewRepresentable {
     var autofocus: Bool
     var fontSize: CGFloat = 13.5
 
-    static func bodyFont(_ size: CGFloat) -> NSFont { .systemFont(ofSize: size) }
+    static func bodyFont(_ size: CGFloat) -> NSFont { Ink.body(size) }
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -188,7 +188,7 @@ struct NoteTextView: NSViewRepresentable {
             tv.string = text
             Self.styleTasks(tv, ink: ink, size: fontSize)
         }
-        if tv.textColor != ink || tv.font?.pointSize != fontSize {
+        if tv.textColor != ink || tv.font != Self.bodyFont(fontSize) {
             tv.textColor = ink
             tv.insertionPointColor = ink
             tv.font = Self.bodyFont(fontSize)
@@ -274,11 +274,13 @@ struct NoteEditorView: View {
         }
         .background(
             noteShape
-                .fill(pal.paper)
-                .shadow(color: .black.opacity(0.32), radius: 26, x: onRight ? -10 : 10, y: 10)
+                .fill(LinearGradient(colors: [pal.paper, pal.paper.opacity(0.88)],
+                                     startPoint: .top, endPoint: .bottom))
+                .shadow(color: .black.opacity(0.34), radius: 28, x: onRight ? -12 : 12, y: 12)
         )
         .clipShape(noteShape)
         .overlay(noteShape.strokeBorder(Color.black.opacity(0.07), lineWidth: 0.5))
+        .rotationEffect(.degrees(note.lean), anchor: onRight ? .trailing : .leading)
         .onAppear {
             text = note.body
             savedAt = note.modified

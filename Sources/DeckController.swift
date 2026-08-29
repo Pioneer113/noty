@@ -38,6 +38,11 @@ final class DeckModel: ObservableObject {
     @Published var style: DeckStyle = Settings.deckStyle
     @Published var onLeftEdge: Bool = Settings.deckOnLeftEdge
     @Published var fontSize: Double = Settings.noteFontSize
+    /// Published by the controller the instant the panel is resized. Reading this
+    /// instead of a GeometryReader matters: the reader reports the *previous* size
+    /// for a frame or two after a resize, and the deck lays out against the wrong
+    /// edge in the meantime.
+    @Published var panelHeight: CGFloat = 0
 
     func syncPreferences() {
         style = Settings.deckStyle
@@ -125,16 +130,17 @@ final class DeckController: NSObject {
             let w = DeckGeom.pillTouchWidth
             frame = NSRect(x: onRight ? full.maxX - w : full.minX,
                            y: vis.midY - h / 2, width: w, height: h)
-        case .fan:
-            let w = DeckGeom.fanWidth
-            frame = NSRect(x: onRight ? full.maxX - w : full.minX,
-                           y: vis.minY, width: w, height: vis.height)
-        case .expanded:
+        case .fan, .expanded:
+            // Same width for both. Resizing the panel as a note opens makes the
+            // window resize and SwiftUI's relayout land in different frames, and
+            // for one frame the deck draws against the panel's far edge — which
+            // looks exactly like the note flying in from mid-screen.
             let w = DeckGeom.expandedWidth
             frame = NSRect(x: onRight ? full.maxX - w : full.minX,
                            y: vis.minY, width: w, height: vis.height)
         }
         panel.setFrame(frame, display: true, animate: false)
+        if model.panelHeight != frame.height { model.panelHeight = frame.height }
     }
 
     func refreshLevel() {
@@ -199,9 +205,14 @@ final class DeckController: NSObject {
         guard idleTimer == nil else { return }
         lastActivity = Date()
         lastPointer = NSEvent.mouseLocation
-        idleTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+        idleTimer = Timer.scheduledTimer(withTimeInterval: 0.12, repeats: true) { [weak self] _ in
             guard let self else { return }
             let now = NSEvent.mouseLocation
+            // The panel is wider than the deck, so the tracking area cannot tell us
+            // the pointer has left the tabs; compare against the strip instead.
+            if self.model.state == .fan, !self.hotZone.contains(now) {
+                self.collapse(); return
+            }
             if abs(now.x - self.lastPointer.x) > 2 || abs(now.y - self.lastPointer.y) > 2 {
                 self.lastPointer = now
                 self.lastActivity = Date()
@@ -232,13 +243,24 @@ final class DeckController: NSObject {
         setState(.fan)
     }
 
+    /// The panel is wide enough to hold an open note, but the deck itself only
+    /// occupies the strip against the screen edge — that strip is what "leaving
+    /// the deck" means.
+    private var hotZone: NSRect {
+        let f = panel.frame
+        let w = DeckGeom.fanWidth + 20
+        return Settings.deckOnLeftEdge
+            ? NSRect(x: f.minX, y: f.minY, width: w, height: f.height)
+            : NSRect(x: f.maxX - w, y: f.minY, width: w, height: f.height)
+    }
+
     func pointerExited() {
         guard model.state == .fan else { return }   // an open note stays open until Esc
         // Tracking areas fire spuriously across a resize, so confirm the pointer really left.
         exitWork?.cancel()
         let work = DispatchWorkItem { [weak self] in
             guard let self, self.model.state == .fan else { return }
-            if !self.panel.frame.contains(NSEvent.mouseLocation) {
+            if !self.hotZone.contains(NSEvent.mouseLocation) {
                 DeckLog.line("pointerExited confirmed")
                 self.setState(.rest)
             }
@@ -359,6 +381,11 @@ final class DeckController: NSObject {
         }
         styleItem.submenu = styleMenu
         menu.addItem(styleItem)
+
+        let hand = NSMenuItem(title: "Handwritten note text",
+                              action: #selector(AppDelegate.toggleHandwriting), keyEquivalent: "")
+        hand.state = Settings.handwrittenBody ? .on : .off
+        menu.addItem(hand)
 
         let textItem = NSMenuItem(title: "Text size", action: nil, keyEquivalent: "")
         let textMenu = NSMenu()
