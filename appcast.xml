@@ -6,13 +6,13 @@
     <description>Sticky notes that live at the edge of your screen.</description>
     <language>en</language>
     <item>
-      <title>1.0.4</title>
-      <pubDate>Sat, 29 Aug 2026 23:00:10 +0000</pubDate>
-      <sparkle:version>15</sparkle:version>
-      <sparkle:shortVersionString>1.0.4</sparkle:shortVersionString>
+      <title>1.0.5</title>
+      <pubDate>Sat, 29 Aug 2026 23:05:37 +0000</pubDate>
+      <sparkle:version>17</sparkle:version>
+      <sparkle:shortVersionString>1.0.5</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>Set tab labels in the note hand, narrow the tabs, and stop clipping titles<br><br>- Tab labels now use the same face as note bodies, a weight bolder<br>  (Noteworthy Bold, 9.5pt), and follow the handwriting setting.<br>- Tabs narrowed from 36 to 30pt.<br>- Titles no longer clip: the strip was being sized to exactly the measured label<br>  width, so rounding ate the last glyph. The strip is now the label plus 20pt<br>  and the label is drawn inside it with a 12pt inset, leaving real slack. The<br>  measurement also has to use the face the tab actually draws with.<br>- The label is centred on the visible tab rather than on the bled shape, which<br>  was pushing it toward the screen edge.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
-      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.4/Noty-1.0.4.dmg" type="application/octet-stream" sparkle:edSignature="a48+rGf3CZTF8RnSLRSSg8DC3WTAkHFotvduIENkOv13mJWz2JpG8YGk9R8Mien+rLKyMSY6w2iekcLv/n5UCg==" length="1666120" />
+      <description><![CDATA[<p>Keep the lean on the tabs, sit the open note square<br><br>An open note is being read and written in, so a tilt fights the text. The tabs<br>are what should look stuck on by hand. The note also loses the edge bleed that<br>went with its lean and sits flush against the screen edge again.<br><br>Screenshots, demo and site rebuilt to match.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.5/Noty-1.0.5.dmg" type="application/octet-stream" sparkle:edSignature="oRKrFYl3sJtPogIm2S3jeafGhMmc06s5nEsXm8WseKaus20p9QSpN6lJPqjMBJ5hlYmdq6eQ+WfPceuJ4h+bAw==" length="1672909" />
     </item>
   </channel>
 </rss>
