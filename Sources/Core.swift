@@ -91,6 +91,27 @@ enum Ink {
             ?? NSFont(name: "BradleyHandITCTT-Bold", size: size + 1.5)
             ?? .systemFont(ofSize: size)
     }
+
+    // Tab labels are set in the same hand as the notes, a shade bolder so they
+    // hold up at this size and turned on their side.
+    static let tabSize: CGFloat = 9.5
+    static let tabTracking: CGFloat = 0.1
+    private static let tabFace = "Noteworthy-Bold"
+
+    private static var handAvailable: Bool {
+        Settings.handwrittenBody && NSFont(name: tabFace, size: tabSize) != nil
+    }
+
+    /// For measuring — layout sizes each tab's strip to the longest label.
+    static var tabNSFont: NSFont {
+        handAvailable ? NSFont(name: tabFace, size: tabSize)!
+                      : .systemFont(ofSize: 9, weight: .semibold)
+    }
+
+    static var tabFont: Font {
+        handAvailable ? .custom(tabFace, size: tabSize)
+                      : .system(size: 9, weight: .semibold)
+    }
 }
 
 // MARK: - Model

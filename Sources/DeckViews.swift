@@ -264,15 +264,16 @@ struct VerticalTab: View {
                             radius: isOpen || hovering ? 9 : 6,
                             x: onRight ? -3 : 3, y: 2)
                 Text(note.displayTitle.uppercased())
-                    .font(.system(size: 9, weight: .semibold))
-                    .tracking(DeckGeom.tabTracking)
+                    .font(Ink.tabFont)
+                    .tracking(Ink.tabTracking)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .foregroundStyle(note.palette.ink.opacity(0.78))
-                    .frame(width: max(20, strip - DeckGeom.labelPad),
+                    .foregroundStyle(note.palette.ink.opacity(0.85))
+                    .frame(width: max(20, strip - DeckGeom.labelInset),
                            height: DeckGeom.tabWidth)
                     .rotationEffect(.degrees(onRight ? 90 : -90))
                     .frame(width: DeckGeom.tabWidth, height: strip)
+                    .offset(x: onRight ? -DeckGeom.bleed / 2 : DeckGeom.bleed / 2)
             }
             .frame(width: DeckGeom.tabWidth + DeckGeom.bleed, height: height, alignment: .top)
             .rotationEffect(.degrees(DeckGeom.lean(onRight: onRight)), anchor: onRight ? .trailing : .leading)
@@ -349,10 +350,10 @@ struct EmptyTab: View {
             ZStack(alignment: .top) {
                 edgeTabShape(onRight: onRight).fill(.ultraThinMaterial)
                 Text("NEW NOTE")
-                    .font(.system(size: 9, weight: .semibold))
-                    .tracking(DeckGeom.tabTracking)
+                    .font(Ink.tabFont)
+                    .tracking(Ink.tabTracking)
                     .foregroundStyle(.secondary)
-                    .frame(width: max(20, strip - DeckGeom.labelPad),
+                    .frame(width: max(20, strip - DeckGeom.labelInset),
                            height: DeckGeom.tabWidth)
                     .rotationEffect(.degrees(onRight ? 90 : -90))
                     .frame(width: DeckGeom.tabWidth, height: strip)

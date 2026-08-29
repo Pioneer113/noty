@@ -320,8 +320,8 @@ struct NoteEditorView: View {
             .frame(width: DeckGeom.gutterWidth)
             .overlay {
                 Text(note.displayTitle.uppercased())
-                    .font(.system(size: 9.5, weight: .semibold))
-                    .tracking(0.9)
+                    .font(Ink.tabFont)
+                    .tracking(Ink.tabTracking)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .foregroundStyle(pal.ink.opacity(0.7))

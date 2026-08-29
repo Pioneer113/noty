@@ -63,15 +63,19 @@ enum DeckGeom {
     static let maxDashes = 14
 
     // Fan
-    static let tabWidth: CGFloat = 36
+    static let tabWidth: CGFloat = 30
     static let tabHeightMax: CGFloat = 118
     static let tabHeightMin: CGFloat = 58
     static let tabGap: CGFloat = 7
     /// How far the next tab laps over the one before it.
     static let tabLap: CGFloat = 40
     static let pitchMin: CGFloat = 56
-    static let pitchMax: CGFloat = 92
-    static let labelPad: CGFloat = 14
+    static let pitchMax: CGFloat = 106
+    /// The strip is the label plus this much; the label is drawn inside it with
+    /// `labelInset`. Keeping the two different is what leaves the last glyph room
+    /// — sizing the strip to exactly the text width truncates on rounding.
+    static let labelPad: CGFloat = 20
+    static let labelInset: CGFloat = 12
     /// Tabs and notes are drawn a little past the screen edge so their lean cannot
     /// open a wedge of background between them and the edge they are stuck to.
     static let bleed: CGFloat = 14
@@ -81,27 +85,25 @@ enum DeckGeom {
     static let leanDegrees: Double = 3.0
     static func lean(onRight: Bool) -> Double { onRight ? -leanDegrees : leanDegrees }
 
-    static let tabFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
-    static let tabTracking: CGFloat = 0.4
-
     /// Rendered width of a tab label, used to size the strip that shows it.
+    /// Must use the same face the tab draws with or the strip will not fit.
     static func labelWidth(_ title: String) -> CGFloat {
         let text = title.uppercased() as NSString
         guard text.length > 0 else { return 0 }
-        return text.size(withAttributes: [.font: tabFont]).width
-            + tabTracking * CGFloat(text.length)
+        return text.size(withAttributes: [.font: Ink.tabNSFont]).width
+            + Ink.tabTracking * CGFloat(text.length)
     }
-    static let chipWidth: CGFloat = 34
+    static let chipWidth: CGFloat = 30
     static let chipHeight: CGFloat = 24
     static let chipGap: CGFloat = 6
-    static let fanWidth: CGFloat = 56
+    static let fanWidth: CGFloat = 50
     static let plusSize: CGFloat = 28
     static let plusInset: CGFloat = 14
     static let plusGap: CGFloat = 12
     static let moreTabHeight: CGFloat = 34
 
     /// The deck may claim at most this much of the screen before tabs start shrinking.
-    static let heightBudget: CGFloat = 0.62
+    static let heightBudget: CGFloat = 0.68
 
     /// The open note carries its own tab as a left gutter, so it reads as
     /// growing out of the deck rather than floating beside it.
