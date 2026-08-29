@@ -52,6 +52,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         deckManager.refreshAll()
     }
 
+    /// ⌃+ / ⌃- while a note is open.
+    func stepFontSize(by delta: Double) {
+        Settings.noteFontSize += delta
+        deckManager.refreshAll()
+    }
+
+    @objc func biggerText()  { stepFontSize(by: 1.5) }
+    @objc func smallerText() { stepFontSize(by: -1.5) }
+
     @objc func toggleDeckEdge() {
         Settings.deckOnLeftEdge.toggle()
         deckManager.refreshAll()
@@ -111,6 +120,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(withTitle: "Archive", action: #selector(openArchive), keyEquivalent: "l")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Import…", action: #selector(importStickies), keyEquivalent: "i")
+        appMenu.addItem(.separator())
+        let bigger = appMenu.addItem(withTitle: "Bigger Text", action: #selector(biggerText), keyEquivalent: "+")
+        bigger.keyEquivalentModifierMask = [.control]
+        let smaller = appMenu.addItem(withTitle: "Smaller Text", action: #selector(smallerText), keyEquivalent: "-")
+        smaller.keyEquivalentModifierMask = [.control]
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Hide Noty", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(withTitle: "Quit Noty", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")

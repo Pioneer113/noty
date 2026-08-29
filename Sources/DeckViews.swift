@@ -65,7 +65,6 @@ struct DeckRootView: View {
             .frame(width: geo.size.width, height: geo.size.height,
                    alignment: onRight ? .topTrailing : .topLeading)
         }
-        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: deck.state)
         .animation(.spring(response: 0.30, dampingFraction: 0.9), value: deck.fanVisible)
         .animation(.easeInOut(duration: 0.22), value: deck.style)
     }

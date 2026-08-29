@@ -59,6 +59,9 @@ final class DeckController: NSObject {
     private var container: DeckContentView!
     private var keyMonitor: Any?
     private var outsideMonitor: Any?
+    private var idleTimer: Timer?
+    private var lastActivity = Date()
+    private var lastPointer = NSEvent.mouseLocation
     private var exitWork: DispatchWorkItem?     // debounced pointer-exit check
     private var shrinkWork: DispatchWorkItem?   // delayed panel shrink after collapse
     private var bag = Set<AnyCancellable>()
@@ -101,6 +104,7 @@ final class DeckController: NSObject {
     deinit {
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
         if let outsideMonitor { NSEvent.removeMonitor(outsideMonitor) }
+        idleTimer?.invalidate()
         panel.orderOut(nil)
     }
 
@@ -152,9 +156,13 @@ final class DeckController: NSObject {
                 model.state = new
                 model.revealTick &+= 1
             } else {
-                // One tick later, so SwiftUI animates inside a stable panel size.
-                DispatchQueue.main.async {
-                    withAnimation(.spring(response: 0.36, dampingFraction: 0.84)) {
+                // The panel has to be its final size *and rendered* before the note
+                // animates in. `main.async` is not enough — SwiftUI coalesces the
+                // resize and the state change into one pass, and then animates the
+                // container's width, dragging the whole deck across the screen with
+                // it. Two display frames of delay keeps them in separate passes.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0 / 60.0) {
+                    withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
                         self.model.state = new
                     }
                 }
@@ -171,15 +179,51 @@ final class DeckController: NSObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.30, execute: work)
         }
 
+        noteActivity()
         if new.expandedID != nil {
             installKeyMonitor(); installOutsideMonitor()
         } else {
             removeKeyMonitor(); removeOutsideMonitor()
         }
+        if new == .rest { stopIdleWatch() } else { startIdleWatch() }
         if new == .rest { model.showAll = false; model.findQuery = nil }
     }
 
+    /// Anything the user does keeps the deck awake.
+    func noteActivity() { lastActivity = Date() }
+
+    /// A deck left untouched tidies itself away: the fan after a few seconds, an
+    /// open note after a minute. Polling the pointer avoids needing mouse-moved
+    /// events (and the permissions that can come with watching them globally).
+    private func startIdleWatch() {
+        guard idleTimer == nil else { return }
+        lastActivity = Date()
+        lastPointer = NSEvent.mouseLocation
+        idleTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let now = NSEvent.mouseLocation
+            if abs(now.x - self.lastPointer.x) > 2 || abs(now.y - self.lastPointer.y) > 2 {
+                self.lastPointer = now
+                self.lastActivity = Date()
+            }
+            let idle = Date().timeIntervalSince(self.lastActivity)
+            switch self.model.state {
+            case .fan where idle > Settings.fanIdleTimeout:
+                self.collapse()
+            case .expanded where idle > Settings.noteIdleTimeout:
+                self.collapse()
+            default: break
+            }
+        }
+    }
+
+    private func stopIdleWatch() {
+        idleTimer?.invalidate()
+        idleTimer = nil
+    }
+
     func pointerEntered() {
+        noteActivity()
         exitWork?.cancel(); exitWork = nil
         shrinkWork?.cancel(); shrinkWork = nil
         DeckLog.line("pointerEntered state=\(model.state) panel=\(Int(panel.frame.width))")
@@ -204,6 +248,7 @@ final class DeckController: NSObject {
     }
 
     func expand(_ id: String) {
+        noteActivity()
         manager?.deckDidActivate(self)
         setState(.expanded(id))
         NSApp.activate()
@@ -233,6 +278,20 @@ final class DeckController: NSObject {
                 else { self.collapse() }
                 return nil
             }
+            if mods == .control {
+                switch event.charactersIgnoringModifiers {
+                case "+", "=":
+                    (NSApp.delegate as? AppDelegate)?.stepFontSize(by: 1.5)
+                    self.noteActivity()
+                    return nil
+                case "-", "_":
+                    (NSApp.delegate as? AppDelegate)?.stepFontSize(by: -1.5)
+                    self.noteActivity()
+                    return nil
+                default: break
+                }
+            }
+            self.noteActivity()
             guard mods == .command else { return event }
             if event.keyCode == 51 {                                  // ⌘⌫
                 NoteStore.shared.delete(id: id)

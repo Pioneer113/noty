@@ -58,6 +58,7 @@ Inside a note:
 | `⌘.` | cycle its colour |
 | `⌘T` | turn the current line into a task, or strip the checkbox off |
 | `⌘⌫` | delete, with ten seconds to undo |
+| `⌃+` / `⌃-` | bigger / smaller note text |
 
 Standard editing (`⌘C` / `⌘V` / `⌘Z` / `⌘A`) works everywhere — the app builds a
 main menu at launch purely so those key equivalents dispatch, even though an
@@ -87,6 +88,8 @@ import reads that back. All Notes shows a `done/total` count per note.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
+- **Tidies itself away.** A fan left untouched collapses after 4 seconds; an open
+  note closes after a minute idle. Clicking anywhere outside a note closes it too.
 - **Export** — Markdown (one `.md` per note), plain text (one `.txt` per note),
   a single document, or a `.stickies` archive that preserves colours, archived
   state and dates. **Import** reads `.stickies` back, and will also take loose

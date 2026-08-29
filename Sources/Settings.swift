@@ -24,13 +24,20 @@ enum Settings {
         ("Small", 12), ("Medium", 13.5), ("Large", 15.5), ("Extra Large", 18)
     ]
 
+    static let fontRange: ClosedRange<Double> = 10...30
+
     static var noteFontSize: Double {
         get {
             let v = d.double(forKey: "noteFontSize")
-            return v >= 10 ? v : 13.5
+            return fontRange.contains(v) ? v : 13.5
         }
-        set { d.set(newValue, forKey: "noteFontSize") }
+        set { d.set(min(max(newValue, fontRange.lowerBound), fontRange.upperBound),
+                    forKey: "noteFontSize") }
     }
+
+    /// How long the deck may sit untouched before it tidies itself away.
+    static let fanIdleTimeout: TimeInterval = 4
+    static let noteIdleTimeout: TimeInterval = 60
 
     /// Labelled tabs, or bare colour chips that barely touch the screen.
     static var deckStyle: DeckStyle {
