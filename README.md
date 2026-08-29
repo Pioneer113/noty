@@ -1,10 +1,17 @@
 # Noty
 
-Sticky notes that live at the edge of your screen. A native macOS app in Swift +
-SwiftUI + AppKit, built as a functional clone of [holdmynotes.app](https://holdmynotes.app/).
+Sticky notes that live at the edge of your screen. A native macOS app in Swift,
+SwiftUI and AppKit.
 
 No dock icon, no window to manage. Slide the pointer to the right edge and the
 deck fans out.
+
+**[noty-sepia.vercel.app](https://noty-sepia.vercel.app)** ·
+**[Download the latest DMG](https://github.com/aimen08/noty/releases/latest/download/Noty.dmg)**
+
+| At rest | Fanned | A note pulled open |
+|---|---|---|
+| ![The deck at rest: a thin pill of coloured dashes on the screen edge](screenshots/rest.png) | ![The deck fanned into shingled paper tabs](screenshots/fan.png) | ![A note pulled clear of the deck, carrying its tab down the left side](screenshots/open.png) |
 
 ## Three states, one movement
 

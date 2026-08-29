@@ -1,0 +1,388 @@
+<title>Noty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#101320; --bg2:#161A28; --surface:#1D2230; --line:#2A3142;
+  --text:#EDEAE3; --text2:#A3A9BA; --text3:#6E7688;
+  --accent:#45D9A6; --accent-ink:#08281E;
+  --p-lemon:#FFF3B0; --p-peach:#FFDCC2; --p-rose:#FFD3DC;
+  --p-lilac:#E3D5FF; --p-sky:#CFE8FF; --p-mint:#C9F0DF; --p-sand:#EADFC8;
+  --i-lemon:#3D3312; --i-peach:#43291A; --i-rose:#421C26;
+  --i-lilac:#2E2145; --i-sky:#18303F; --i-mint:#143329; --i-sand:#3A2F1D;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --rail:64px;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#EEF0F5; --bg2:#E6E9F0; --surface:#FFFFFF; --line:#D3D8E4;
+    --text:#141824; --text2:#4E566A; --text3:#818A9E;
+    --accent:#0E9D74; --accent-ink:#FFFFFF;
+    --shadow:0 18px 44px rgba(28,36,58,.16);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#EEF0F5; --bg2:#E6E9F0; --surface:#FFFFFF; --line:#D3D8E4;
+  --text:#141824; --text2:#4E566A; --text3:#818A9E;
+  --accent:#0E9D74; --accent-ink:#FFFFFF;
+  --shadow:0 18px 44px rgba(28,36,58,.16);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:Karla,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 32px 0 32px}
+@media (min-width:900px){ .wrap{padding-right:calc(var(--rail) + 40px)} }
+
+h1,h2,h3{font-family:Fraunces,Georgia,serif; text-wrap:balance; margin:0; font-weight:600}
+h1{font-size:clamp(2.9rem,7vw,5.2rem); line-height:1.02; letter-spacing:-.022em; font-weight:700}
+h2{font-size:clamp(1.9rem,3.4vw,2.7rem); line-height:1.12; letter-spacing:-.015em}
+h3{font-size:1.12rem; line-height:1.35; letter-spacing:-.005em}
+p{margin:0}
+a{color:inherit}
+
+.label{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.68rem;
+  letter-spacing:.19em; text-transform:uppercase; color:var(--text3);
+}
+kbd{
+  font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.83rem;
+  background:var(--bg2); border:1px solid var(--line); border-bottom-width:2px;
+  border-radius:6px; padding:.16em .5em; color:var(--text); white-space:nowrap;
+}
+.lede{font-size:1.22rem; color:var(--text2); max-width:60ch}
+
+/* ---- the rail: the deck, docked to the page ---- */
+.rail{
+  position:fixed; top:50%; right:0; transform:translateY(-50%);
+  display:flex; flex-direction:column; z-index:50;
+}
+@media (max-width:899px){ .rail{display:none} }
+.tab{
+  width:var(--rail); height:132px; margin-top:-46px;
+  border-radius:12px 0 0 12px;
+  background:var(--tab); color:var(--tab-ink);
+  display:flex; align-items:flex-start; justify-content:center;
+  padding-top:16px; text-decoration:none; cursor:pointer;
+  box-shadow:-4px 3px 14px rgba(0,0,0,.30);
+  transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease;
+  position:relative; border:0; font:inherit;
+}
+.tab:first-child{margin-top:0}
+.tab span{
+  writing-mode:vertical-rl; text-orientation:mixed;
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; font-weight:500;
+}
+.tab:hover,.tab:focus-visible{transform:translateX(-8px); box-shadow:-8px 4px 22px rgba(0,0,0,.42)}
+.tab:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.tab[aria-current="true"]{transform:translateX(-12px); box-shadow:-10px 4px 26px rgba(0,0,0,.45)}
+/* later tabs lap over earlier ones — document order does the shingling */
+.tab:nth-child(1){z-index:1} .tab:nth-child(2){z-index:2} .tab:nth-child(3){z-index:3}
+.tab:nth-child(4){z-index:4} .tab:nth-child(5){z-index:5} .tab:nth-child(6){z-index:6}
+
+.reveal{opacity:0; transform:translateX(46px)}
+.railed .reveal{opacity:1; transform:translateX(0); transition:opacity .42s ease, transform .46s cubic-bezier(.22,1,.36,1)}
+.railed .tab[aria-current="true"]{transform:translateX(-12px)}
+
+/* ---- hero ---- */
+.hero{padding:clamp(72px,11vh,132px) 0 clamp(56px,8vh,96px)}
+.hero-grid{display:grid; gap:clamp(36px,6vw,72px); align-items:center}
+@media (min-width:860px){ .hero-grid{grid-template-columns:1.05fr .95fr} }
+.brand{display:flex; align-items:center; gap:12px; margin-bottom:30px}
+.brand img{width:38px; height:38px; border-radius:9px; display:block}
+.brand b{font-family:Fraunces,serif; font-size:1.16rem; font-weight:600; letter-spacing:-.01em}
+.hero h1{margin-bottom:22px}
+.hero .lede{margin-bottom:30px}
+.hero-cta{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+.btn{
+  display:inline-flex; align-items:center; gap:9px; padding:12px 20px;
+  border-radius:10px; background:var(--accent); color:var(--accent-ink);
+  font-weight:600; text-decoration:none; font-size:.96rem;
+  border:1px solid transparent; transition:transform .16s ease, filter .16s ease;
+}
+.btn:hover{transform:translateY(-1px); filter:brightness(1.06)}
+.btn.ghost{background:transparent; color:var(--text); border-color:var(--line)}
+.btn:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+.meta{margin-top:16px; font-size:.83rem; color:var(--text3); max-width:52ch}
+.shot{
+  border-radius:16px; overflow:hidden; box-shadow:var(--shadow);
+  border:1px solid var(--line); background:var(--bg2); display:block;
+}
+.shot img{display:block; width:100%; height:auto}
+
+/* ---- sections ---- */
+section{padding:clamp(64px,9vh,108px) 0; border-top:1px solid var(--line)}
+.head{max-width:62ch; margin-bottom:44px}
+.head h2{margin-bottom:14px}
+.head p{color:var(--text2)}
+.head .label{display:block; margin-bottom:16px}
+
+.states{display:grid; gap:26px}
+@media (min-width:760px){ .states{grid-template-columns:repeat(3,1fr)} }
+.state figcaption{padding-top:18px}
+.state h3{margin-bottom:7px}
+.state p{color:var(--text2); font-size:.97rem}
+.state .label{display:block; margin-bottom:12px}
+.swatch{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:7px; vertical-align:baseline}
+
+.cols{display:grid; gap:clamp(30px,5vw,60px)}
+@media (min-width:820px){ .cols{grid-template-columns:1fr 1fr; align-items:center} }
+
+.list{display:grid; gap:2px; margin:0; padding:0; list-style:none}
+.list li{
+  display:grid; grid-template-columns:26px 1fr; gap:12px; align-items:baseline;
+  padding:13px 0; border-bottom:1px solid var(--line);
+}
+.list li:last-child{border-bottom:0}
+.list b{font-weight:600}
+.list span{color:var(--text2); font-size:.97rem}
+.tick{font-family:"JetBrains Mono",monospace; color:var(--accent); font-size:.95rem}
+
+.keys{display:grid; gap:0; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface)}
+.keyrow{display:grid; grid-template-columns:132px 1fr; gap:16px; padding:14px 20px; align-items:center; border-bottom:1px solid var(--line)}
+.keyrow:last-child{border-bottom:0}
+.keyrow span{color:var(--text2); font-size:.97rem}
+.keygroup{padding:11px 20px; background:var(--bg2); border-bottom:1px solid var(--line)}
+
+.note{
+  border:1px solid var(--line); border-left:3px solid var(--accent);
+  background:var(--surface); border-radius:0 12px 12px 0; padding:20px 22px;
+}
+.note p{color:var(--text2); font-size:.97rem}
+.note p+p{margin-top:10px}
+
+pre{
+  margin:0; background:var(--bg2); border:1px solid var(--line); border-radius:12px;
+  padding:18px 20px; overflow-x:auto; font-family:"JetBrains Mono",monospace;
+  font-size:.86rem; line-height:1.7; color:var(--text);
+}
+pre .c{color:var(--text3)}
+
+footer{border-top:1px solid var(--line); padding:44px 0 60px; color:var(--text3); font-size:.9rem}
+footer p+p{margin-top:8px}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important; transition-duration:.01ms!important}
+  .reveal{opacity:1; transform:none}
+}
+</style>
+
+<nav class="rail" aria-label="Page sections">
+  <a class="tab reveal" href="#states" style="--tab:var(--p-lemon);--tab-ink:var(--i-lemon)"><span>Three states</span></a>
+  <a class="tab reveal" href="#deck"   style="--tab:var(--p-mint); --tab-ink:var(--i-mint)"><span>The deck</span></a>
+  <a class="tab reveal" href="#tasks"  style="--tab:var(--p-rose); --tab-ink:var(--i-rose)"><span>Tasks</span></a>
+  <a class="tab reveal" href="#privacy"style="--tab:var(--p-lilac);--tab-ink:var(--i-lilac)"><span>Private</span></a>
+  <a class="tab reveal" href="#keys"   style="--tab:var(--p-sky);  --tab-ink:var(--i-sky)"><span>Shortcuts</span></a>
+  <a class="tab reveal" href="#build"  style="--tab:var(--p-sand); --tab-ink:var(--i-sand)"><span>Build it</span></a>
+</nav>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="brand">
+          <img src="{{ICON}}" alt="">
+          <b>Noty</b>
+        </div>
+        <h1>Your notes live at the edge of the screen.</h1>
+        <p class="lede">A native macOS sticky-notes app that sleeps as a thin stripe on the screen edge. Reach over and it fans into paper tabs. Click one and the note slides clear, full size, right where it sat.</p>
+        <div class="hero-cta">
+          <a class="btn" href="https://github.com/aimen08/noty/releases/latest/download/Noty.dmg">Download for macOS</a>
+          <a class="btn ghost" href="https://github.com/aimen08/noty">Source on GitHub</a>
+        </div>
+        <p class="meta">macOS 15 or later · Apple silicon · 1.6&nbsp;MB · updates itself · ad-hoc signed, so right-click&nbsp;→&nbsp;Open the first time</p>
+      </div>
+      <figure class="shot" style="margin:0">
+        <img src="{{FAN}}" alt="Noty fanned open on a desktop: five pastel tabs shingled down the right edge of the screen, labelled Ship checklist, Call Dana back, Book quotes, Standup notes and Weekend, with a plus-four tab and a new-note button below.">
+      </figure>
+    </div>
+  </header>
+
+  <section id="states">
+    <div class="head">
+      <span class="label">Three states, one movement</span>
+      <h2>It gets out of the way, then it doesn't.</h2>
+      <p>The deck has exactly three states, and your pointer moves between them without a click. Nothing is ever docked, windowed, or in your way.</p>
+    </div>
+    <div class="states">
+      <figure class="state" style="margin:0">
+        <span class="shot"><img src="{{REST}}" alt="A 12-point pill on the screen edge showing one small coloured dash per note."></span>
+        <figcaption>
+          <span class="label">At rest</span>
+          <h3>A thin stripe</h3>
+          <p>A 12&nbsp;pt pill on the screen edge, one coloured dash per note. No window, no Dock icon, no menu-bar clutter.</p>
+        </figcaption>
+      </figure>
+      <figure class="state" style="margin:0">
+        <span class="shot"><img src="{{FAN}}" alt="Five pastel tabs shingled down the screen edge, each carrying its title turned on its side."></span>
+        <figcaption>
+          <span class="label">Pointer arrives</span>
+          <h3>It fans</h3>
+          <p>Notes shingle down the edge 45&nbsp;ms apart, each keeping its colour and carrying its label turned on its side.</p>
+        </figcaption>
+      </figure>
+      <figure class="state" style="margin:0">
+        <span class="shot"><img src="{{OPEN}}" alt="An open note running flush to the screen edge, its tab label carried down the left side, with checkbox tasks inside."></span>
+        <figcaption>
+          <span class="label">Click a tab</span>
+          <h3>The note pulls out</h3>
+          <p>It slides clear at full size, level with its own tab and carrying it along the edge. Typing writes to disk 250&nbsp;ms after you stop.</p>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="deck">
+    <div class="head">
+      <span class="label">The deck</span>
+      <h2>Five at a time, at full size.</h2>
+      <p>Tabs lap over each other like roof tiles. That keeps the whole deck to about half the screen height while each tab stays tall enough to carry a readable label — the sixth note and beyond wait behind a <b>+N</b> tab that opens the full list.</p>
+    </div>
+    <div class="cols">
+      <ul class="list">
+        <li><span class="tick">→</span><div><b>Sized to your titles.</b> <span>The uncovered strip of each tab measures itself against the longest title on the deck, so labels read in full instead of being clipped mid-word.</span></div></li>
+        <li><span class="tick">→</span><div><b>Two deck styles.</b> <span>Labelled tabs, or bare colour chips that barely touch the screen. Right-click the pill to switch.</span></div></li>
+        <li><span class="tick">→</span><div><b>One deck per display.</b> <span>Every screen gets its own dormant pill. The deck opens on whichever screen your pointer enters and the others stay shut.</span></div></li>
+        <li><span class="tick">→</span><div><b>Over full-screen apps.</b> <span>Optional, off by default. Also picks its edge — right or left — and its text size.</span></div></li>
+        <li><span class="tick">→</span><div><b>Archived, not deleted.</b> <span>Archiving pulls a note out of the deck but keeps it. Deleting gives you ten seconds to undo.</span></div></li>
+        <li><span class="tick">→</span><div><b>Tidies itself away.</b> <span>A fan you stop using collapses after a few seconds, an idle note closes after a minute, and clicking anywhere outside a note closes it.</span></div></li>
+      </ul>
+      <div>
+        <span class="shot"><img src="{{OPEN}}" alt="An open note beside the remaining deck tabs, showing the colour swatch row and Archive, Delete and Close buttons."></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="tasks">
+    <div class="head">
+      <span class="label">Checkbox tasks</span>
+      <h2>Any line can be a task.</h2>
+      <p><kbd>⌘T</kbd> puts a checkbox on the current line. Click the box to tick it off and the line strikes through and dims. Return carries the list on to the next task; Return on an empty one ends it.</p>
+    </div>
+    <div class="cols">
+      <div class="note">
+        <p>Tasks live inline in the note body as <b>☐</b> and <b>☑</b> prefixes, so a note is still plain text — nothing proprietary wrapped around it.</p>
+        <p>Markdown export writes them as standard <b>- [ ]</b> and <b>- [x]</b> task syntax, and import reads that straight back. All&nbsp;Notes shows a done/total count beside each note.</p>
+      </div>
+      <ul class="list">
+        <li><span class="tick">☑</span><div><b>Click the box.</b> <span>Not a modifier, not a menu. The checkbox is the hit target.</span></div></li>
+        <li><span class="tick">☐</span><div><b>Export intact.</b> <span>Markdown, plain text, one combined document, or a <b>.stickies</b> archive that round-trips colours, archived state and dates.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="head">
+      <span class="label">Local only</span>
+      <h2>Your notes stay on your Mac.</h2>
+      <p>There is no account, no sync, and no server holding your notes. The app makes exactly one kind of network request, and it has nothing to do with your notes.</p>
+    </div>
+    <div class="cols">
+      <ul class="list">
+        <li><span class="tick">→</span><div><b>Note bodies are encrypted.</b> <span>AES-GCM via CryptoKit, 256-bit. Titles, colours and timestamps stay readable so lists render without unsealing every row.</span></div></li>
+        <li><span class="tick">→</span><div><b>A local SQLite database.</b> <span>In <b>~/Library/Application&nbsp;Support/Noty/</b>. Yours to inspect, back up, or delete.</span></div></li>
+        <li><span class="tick">→</span><div><b>No permissions asked.</b> <span>Global shortcuts go through the system hotkey API, which needs no Accessibility access. No Screen Recording either.</span></div></li>
+        <li><span class="tick">→</span><div><b>No analytics, no tracking SDKs.</b> <span>Nothing about your notes is measured, logged or transmitted.</span></div></li>
+        <li><span class="tick">→</span><div><b>One request, ever.</b> <span>The updater fetches a public XML file to see whether a newer version exists — a plain GET, no note data attached. Switch off <b>Check automatically</b> and it never fires again.</span></div></li>
+      </ul>
+      <div>
+        <p class="label" style="margin-bottom:12px">Check it yourself</p>
+        <pre><span class="c"># the body column is ciphertext</span>
+sqlite3 ~/Library/Application\ Support/Noty/notes.db \
+  "SELECT hex(substr(body,1,24)) FROM notes;"
+
+<span class="c"># and text from a note never appears in the file</span>
+strings ~/Library/Application\ Support/Noty/notes.db \
+  | grep "a line from one of your notes"</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="keys">
+    <div class="head">
+      <span class="label">Shortcuts</span>
+      <h2>Reachable without the pointer.</h2>
+      <p>The three global shortcuts work from any app. Standard editing — copy, paste, undo, select all — works everywhere too.</p>
+    </div>
+    <div class="keys">
+      <div class="keygroup label">Anywhere</div>
+      <div class="keyrow"><kbd>⌥⌘N</kbd><span>New note, opened straight away</span></div>
+      <div class="keyrow"><kbd>⌥⌘A</kbd><span>All Notes — search across every note</span></div>
+      <div class="keyrow"><kbd>⌥⌘L</kbd><span>Archive</span></div>
+      <div class="keygroup label">Inside a note</div>
+      <div class="keyrow"><kbd>Esc</kbd><span>Close it, or dismiss the find bar</span></div>
+      <div class="keyrow"><kbd>⌘F</kbd><span>Find in note</span></div>
+      <div class="keyrow"><kbd>⌘T</kbd><span>Turn the line into a task, or strip the checkbox off</span></div>
+      <div class="keyrow"><kbd>⌘.</kbd><span>Cycle its colour</span></div>
+      <div class="keyrow"><kbd>⌘⌫</kbd><span>Delete, with ten seconds to undo</span></div>
+      <div class="keyrow"><kbd>⌃+</kbd><span>Bigger note text</span></div>
+      <div class="keyrow"><kbd>⌃-</kbd><span>Smaller note text</span></div>
+    </div>
+  </section>
+
+  <section id="build">
+    <div class="head">
+      <span class="label">Build it</span>
+      <h2>Xcode not required.</h2>
+      <p>Noty is one <code>swiftc</code> invocation over a folder of Swift files, plus a script that assembles the app bundle and ad-hoc signs it. The Swift toolchain from Command Line Tools is enough.</p>
+    </div>
+    <div class="cols">
+      <div>
+        <pre>git clone https://github.com/aimen08/noty
+cd noty
+
+./scripts/fetch-sparkle.sh  <span class="c"># once</span>
+./build.sh                  <span class="c"># → build/Noty.app</span>
+open build/Noty.app</pre>
+      </div>
+      <ul class="list">
+        <li><span class="tick">→</span><div><b>macOS 15 or later.</b> <span>Swift 6 toolchain, SwiftUI and AppKit, no third-party packages.</span></div></li>
+        <li><span class="tick">→</span><div><b>Around 2,700 lines.</b> <span>SQLite through its C API, CryptoKit for the note bodies, Carbon for the global hotkeys.</span></div></li>
+        <li><span class="tick">→</span><div><b>Ad-hoc signed.</b> <span>Not notarised — Gatekeeper wants a right-click → Open the first time.</span></div></li>
+        <li><span class="tick">→</span><div><b>Updates itself.</b> <span>Tag a version and GitHub Actions builds the app, packages a DMG, signs it with an EdDSA key and publishes the appcast Sparkle reads.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Noty is a personal build of an edge-docked notes app for macOS, written in Swift with SwiftUI and AppKit.</p>
+    <p><a href="https://github.com/aimen08/noty">github.com/aimen08/noty</a> · Not affiliated with any other application.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const rail = document.querySelector('.rail');
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+
+  // shingle in, 45 ms apart — the same stagger the deck itself uses
+  tabs.forEach((t,i)=>{ t.style.transitionDelay = (i*45)+'ms'; });
+  requestAnimationFrame(()=>{ document.body.classList.add('railed');
+    setTimeout(()=>tabs.forEach(t=>t.style.transitionDelay=''), 700); });
+
+  // the active tab lifts, the way an open note's tab does
+  const sections = tabs.map(t=>document.querySelector(t.getAttribute('href'))).filter(Boolean);
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const i = sections.indexOf(e.target);
+      tabs.forEach((t,j)=>t.setAttribute('aria-current', j===i ? 'true':'false'));
+    });
+  }, {rootMargin:'-45% 0px -45% 0px'});
+  sections.forEach(s=>io.observe(s));
+
+  tabs.forEach(t=>t.addEventListener('click', e=>{
+    const target = document.querySelector(t.getAttribute('href'));
+    if(!target) return;
+    e.preventDefault();
+    target.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto':'smooth', block:'start'});
+  }));
+})();
+</script>
