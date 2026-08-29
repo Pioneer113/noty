@@ -9,6 +9,8 @@ deck fans out.
 **[noty-sepia.vercel.app](https://noty-sepia.vercel.app)** ·
 **[Download the latest DMG](https://github.com/aimen08/noty/releases/latest/download/Noty.dmg)**
 
+![Noty in use: the deck fans out from the screen edge, a checklist is pulled open, two tasks are ticked off, and the note is dismissed by clicking away](demo.gif)
+
 | At rest | Fanned | A note pulled open |
 |---|---|---|
 | ![The deck at rest: a thin pill of coloured dashes on the screen edge](screenshots/rest.png) | ![The deck fanned into shingled paper tabs](screenshots/fan.png) | ![A note pulled clear of the deck, carrying its tab down the left side](screenshots/open.png) |

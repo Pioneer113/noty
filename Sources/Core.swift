@@ -124,7 +124,7 @@ struct Note: Identifiable, Hashable {
     var lean: Double {
         var h: UInt64 = 5381
         for b in id.utf8 { h = (h &* 33) &+ UInt64(b) }
-        return (Double(h % 200) / 100.0 - 1.0) * 1.1     // ±1.1°
+        return (Double(h % 200) / 100.0 - 1.0) * 3.2     // ±3.2°
     }
 
     /// Completed / total, or nil when the note holds no tasks.

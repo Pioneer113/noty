@@ -33,6 +33,10 @@ for token, path in [("{{REST}}", "screenshots/rest.png"),
     out = out.replace(token, jpeg(root / path))
 out = out.replace("{{ICON}}", png(root / "site/icon.png"))
 
+video = root / "site/demo.mp4"
+out = out.replace("{{VIDEO}}",
+                  "data:video/mp4;base64," + base64.b64encode(video.read_bytes()).decode())
+
 (root / "site/index.html").write_text(out)
 shutil.rmtree(tmp, ignore_errors=True)
 print(f"✓ site/index.html rebuilt ({len(out) // 1024} KB)")

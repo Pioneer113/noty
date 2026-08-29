@@ -72,6 +72,9 @@ enum DeckGeom {
     static let pitchMin: CGFloat = 56
     static let pitchMax: CGFloat = 92
     static let labelPad: CGFloat = 14
+    /// Tabs and notes are drawn a little past the screen edge so their lean cannot
+    /// open a wedge of background between them and the edge they are stuck to.
+    static let bleed: CGFloat = 14
 
     static let tabFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
     static let tabTracking: CGFloat = 0.4
