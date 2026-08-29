@@ -73,13 +73,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          V="${{ steps.v.outputs.version }}"
+          # A stable filename as well, so the website's download link never has to
+          # be edited. Sparkle keeps using the versioned one named in the appcast.
+          cp "build/Noty-${V}.dmg" build/Noty.dmg
           gh release create "${{ steps.v.outputs.tag }}" \
-            "build/Noty-${{ steps.v.outputs.version }}.dmg" \
-            --title "Noty ${{ steps.v.outputs.version }}" \
+            "build/Noty-${V}.dmg" build/Noty.dmg \
+            --title "Noty ${V}" \
             --generate-notes \
             --latest || \
           gh release upload "${{ steps.v.outputs.tag }}" \
-            "build/Noty-${{ steps.v.outputs.version }}.dmg" --clobber
+            "build/Noty-${V}.dmg" build/Noty.dmg --clobber
 
       - name: Commit the appcast so Sparkle can see the update
         run: |
