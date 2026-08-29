@@ -6,13 +6,13 @@
     <description>Sticky notes that live at the edge of your screen.</description>
     <language>en</language>
     <item>
-      <title>1.0.2</title>
-      <pubDate>Sat, 29 Aug 2026 21:55:31 +0000</pubDate>
-      <sparkle:version>10</sparkle:version>
-      <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
+      <title>1.0.3</title>
+      <pubDate>Sat, 29 Aug 2026 22:46:01 +0000</pubDate>
+      <sparkle:version>13</sparkle:version>
+      <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>Refresh screenshots, drop the clone reference, build the site from a template<br><br>- README leads with the three states and links the site and the DMG; the<br>  holdmynotes.app reference is gone.<br>- screenshots/ holds the real captures and the README embeds them.<br>- scripts/build-site.sh rebuilds site/index.html from index.template.html,<br>  inlining the screenshots so the page stays one self-contained file. Editing<br>  the built page by regex kept collapsing all five placements onto one image.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
-      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.2/Noty-1.0.2.dmg" type="application/octet-stream" sparkle:edSignature="wZrRDAggHisgxyRYjpRqC4EYtx7HJEQJcD0uI/SDkWVyDanjkClOAYGPFbf7pZGqWUgt+1cKNdH3sTnDF77BCA==" length="1670984" />
+      <description><![CDATA[<p>Lean the whole deck one way, and close a note back to the tabs<br><br>- Every tab, chip and note now leans at the same angle instead of a per-note<br>  random one. Matching angles read as deliberate; scattered ones just looked<br>  like a bug.<br>- Closing a note (Esc, Close, archive, delete) steps back to the deck rather<br>  than dismissing it — the tabs stay where they were, and only leaving the edge<br>  puts the deck to sleep. A click in another app still dismisses the lot.<br>- Screenshots, the demo recording and the site rebuilt against the final look.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.3/Noty-1.0.3.dmg" type="application/octet-stream" sparkle:edSignature="6rUjdHEY0C98X5ndvrat7+zSYTOS5J3ETv9OQuY+pMIPyGtrzS4pdI1xXP67lx2UTfBqgVzD1AWJaO3Q2KDPDg==" length="1667119" />
     </item>
   </channel>
 </rss>
