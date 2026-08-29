@@ -1,4 +1,51 @@
 <title>Noty</title>
+<meta name="description" content="Noty is a native macOS notes app that sleeps as a thin stripe on the screen edge. Reach over and it fans into paper tabs; click one and the note pulls out full size. Local-only, encrypted, free.">
+<link rel="canonical" href="https://noty-sepia.vercel.app/">
+<meta name="theme-color" content="#EFEBE3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191713" media="(prefers-color-scheme: dark)">
+
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Noty">
+<meta property="og:title" content="Noty — notes that live on the edge of your screen">
+<meta property="og:description" content="A native macOS notes app that sleeps as a thin stripe on the screen edge, fans into paper tabs when you reach over, and pulls a note out full size. Local-only and encrypted.">
+<meta property="og:url" content="https://noty-sepia.vercel.app/">
+<meta property="og:image" content="https://noty-sepia.vercel.app/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Noty — pastel note tabs shingled down the right edge of a page, beside the app name.">
+<meta property="og:locale" content="en">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Noty — notes that live on the edge of your screen">
+<meta name="twitter:description" content="A native macOS notes app that docks to the screen edge. Local-only, encrypted, free.">
+<meta name="twitter:image" content="https://noty-sepia.vercel.app/og.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Noty",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 15 or later",
+  "url": "https://noty-sepia.vercel.app/",
+  "downloadUrl": "https://github.com/aimen08/noty/releases/latest/download/Noty.dmg",
+  "softwareVersion": "1.0.5",
+  "description": "A native macOS notes app that sleeps as a thin stripe on the screen edge, fans into paper tabs when you reach over, and pulls a note out full size. Notes are stored locally in SQLite with AES-GCM encrypted bodies.",
+  "image": "https://noty-sepia.vercel.app/og.png",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Edge-docked note deck",
+    "Checkbox tasks",
+    "Markdown and .stickies export",
+    "Local-only storage with encrypted note bodies",
+    "Global keyboard shortcuts without Accessibility permission"
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Karla:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
@@ -320,6 +367,7 @@ open build/Noty.app</pre>
 
 <script>
 (function(){
+  document.documentElement.lang = 'en';
   const items = document.querySelectorAll('.settle');
   if (!('IntersectionObserver' in window)) {
     items.forEach(el => el.classList.add('in')); return;

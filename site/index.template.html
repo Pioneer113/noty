@@ -1,4 +1,51 @@
 <title>Noty</title>
+<meta name="description" content="Noty is a native macOS notes app that sleeps as a thin stripe on the screen edge. Reach over and it fans into paper tabs; click one and the note pulls out full size. Local-only, encrypted, free.">
+<link rel="canonical" href="https://noty-sepia.vercel.app/">
+<meta name="theme-color" content="#EFEBE3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191713" media="(prefers-color-scheme: dark)">
+
+<link rel="icon" type="image/png" sizes="32x32" href="{{FAVICON}}">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Noty">
+<meta property="og:title" content="Noty — notes that live on the edge of your screen">
+<meta property="og:description" content="A native macOS notes app that sleeps as a thin stripe on the screen edge, fans into paper tabs when you reach over, and pulls a note out full size. Local-only and encrypted.">
+<meta property="og:url" content="https://noty-sepia.vercel.app/">
+<meta property="og:image" content="https://noty-sepia.vercel.app/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Noty — pastel note tabs shingled down the right edge of a page, beside the app name.">
+<meta property="og:locale" content="en">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Noty — notes that live on the edge of your screen">
+<meta name="twitter:description" content="A native macOS notes app that docks to the screen edge. Local-only, encrypted, free.">
+<meta name="twitter:image" content="https://noty-sepia.vercel.app/og.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Noty",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "macOS 15 or later",
+  "url": "https://noty-sepia.vercel.app/",
+  "downloadUrl": "https://github.com/aimen08/noty/releases/latest/download/Noty.dmg",
+  "softwareVersion": "1.0.5",
+  "description": "A native macOS notes app that sleeps as a thin stripe on the screen edge, fans into paper tabs when you reach over, and pulls a note out full size. Notes are stored locally in SQLite with AES-GCM encrypted bodies.",
+  "image": "https://noty-sepia.vercel.app/og.png",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Edge-docked note deck",
+    "Checkbox tasks",
+    "Markdown and .stickies export",
+    "Local-only storage with encrypted note bodies",
+    "Global keyboard shortcuts without Accessibility permission"
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Karla:wght@400;500;600&family=Caveat:wght@500;600&display=swap">
@@ -320,6 +367,7 @@ open build/Noty.app</pre>
 
 <script>
 (function(){
+  document.documentElement.lang = 'en';
   const items = document.querySelectorAll('.settle');
   if (!('IntersectionObserver' in window)) {
     items.forEach(el => el.classList.add('in')); return;

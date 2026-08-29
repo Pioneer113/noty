@@ -28,8 +28,11 @@ jobs:
         run: |
           mkdir -p _site
           cp site/index.html _site/index.html
-          cp site/icon.png  _site/icon.png
-          # the page inlines everything it needs, so nothing else has to ship
+          # the page inlines its images, but crawlers fetch these by URL
+          cp site/og.png site/apple-touch-icon.png site/favicon-32.png \
+             site/icon-512.png site/icon.png _site/
+          sed 's|noty-sepia.vercel.app|aimen08.github.io/noty|g' site/robots.txt  > _site/robots.txt
+          sed 's|noty-sepia.vercel.app|aimen08.github.io/noty|g' site/sitemap.xml > _site/sitemap.xml
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

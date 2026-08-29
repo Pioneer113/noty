@@ -32,6 +32,8 @@ for token, path in [("{{REST}}", "screenshots/rest.png"),
                     ("{{OPEN}}", "screenshots/open.png")]:
     out = out.replace(token, jpeg(root / path))
 out = out.replace("{{ICON}}", png(root / "site/icon.png"))
+# inlined so the favicon also works where the page is served without its assets
+out = out.replace("{{FAVICON}}", png(root / "site/favicon-32.png"))
 
 video = root / "site/demo.mp4"
 out = out.replace("{{VIDEO}}",
