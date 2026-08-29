@@ -7,12 +7,12 @@
     <language>en</language>
     <item>
       <title>1.0.0</title>
-      <pubDate>Sat, 29 Aug 2026 21:27:04 +0000</pubDate>
-      <sparkle:version>2</sparkle:version>
+      <pubDate>Sat, 29 Aug 2026 21:28:40 +0000</pubDate>
+      <sparkle:version>3</sparkle:version>
       <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>Add Sparkle updates, DMG packaging and release automation<br><br>- Embed Sparkle 2.9.6 and add Check for Updates to both menus. Sparkle is<br>  optional: without the framework, Updater.swift compiles to a stub.<br>- build.sh re-signs the Sparkle framework innermost-first with the app&#x27;s own<br>  identity. dyld refuses to load a framework whose Team ID differs from the<br>  process, which is why the framework cannot keep its upstream signature.<br>- scripts/fetch-sparkle.sh, make-dmg.sh, make-appcast.sh.<br>- GitHub Actions: build on push, and on a v* tag build, package, EdDSA-sign,<br>  publish a release and commit the appcast.<br>- Correct the privacy claims: the update check is one network request, and<br>  README and the site now say so instead of &quot;no network at all&quot;.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
-      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.0/Noty-1.0.0.dmg" type="application/octet-stream" sparkle:edSignature="wf7x+IslW/vuy+cT8+WaofwzQN4nDlwU0gvJIS2HgAsJ5Q6hCJlNpbQMK4DkvXwqJIyYDIW3NmtOsphjaKmCAA==" length="1670938" />
+      <description><![CDATA[<p>Sign updates with --ed-key-file so CI can sign at all<br><br>sign_update&#x27;s second positional argument is a signature to verify, not a key<br>file, so `sign_update &lt;dmg&gt; &lt;keyfile&gt;` quietly ignored the file and signed with<br>the Keychain. That works on a development machine and can never work on a<br>runner, which has no Keychain entry — the release job failed there with no<br>output. Pass --ed-key-file explicitly, and check the key and tool up front.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.0/Noty-1.0.0.dmg" type="application/octet-stream" sparkle:edSignature="jmV/+U1VH1/uX6phNjwhENT7rD9jVrFW+AT645WlQQcKJ6Yw1BEVDd9qhCPUFsmczY0CrFtLhGET7mbsXVtoBQ==" length="1664464" />
     </item>
   </channel>
 </rss>
