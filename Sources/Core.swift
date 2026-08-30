@@ -156,6 +156,7 @@ struct Note: Identifiable, Hashable {
     var created: Date = Date()
     var modified: Date = Date()
     var archived: Bool = false
+    var pinned: Bool = false
     var order: Double = 0
 
     var palette: NoteColor { NoteColor.at(color) }

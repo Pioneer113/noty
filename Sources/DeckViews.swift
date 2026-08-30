@@ -281,6 +281,15 @@ struct VerticalTab: View {
             .frame(width: DeckGeom.tabWidth)
             .contentShape(Rectangle())
         }
+        .overlay(alignment: onRight ? .topTrailing : .topLeading) {
+            if note.pinned {
+                Circle()
+                    .fill(note.palette.dash)
+                    .frame(width: 5, height: 5)
+                    .padding(.top, 7)
+                    .padding(onRight ? .trailing : .leading, 9)
+            }
+        }
         .buttonStyle(TabPressStyle())
         .onHover { hovering = $0 }
         .animation(.spring(response: 0.28, dampingFraction: 0.8), value: isOpen)
@@ -392,6 +401,7 @@ struct PlusButton: View {
 extension View {
     func noteContextMenu(_ note: Note) -> some View {
         contextMenu {
+            Button(note.pinned ? "Unpin" : "Pin") { NoteStore.shared.togglePin(id: note.id) }
             Button("Archive") { NoteStore.shared.setArchived(id: note.id, true) }
             Button("Cycle colour  ⌘.") { NoteStore.shared.cycleColor(id: note.id) }
             Divider()

@@ -358,6 +358,17 @@ struct NoteEditorView: View {
             Text(savedAt.map { "Saved · \(Fmt.ago($0))" } ?? "Not saved")
                 .font(.system(size: 10))
                 .foregroundStyle(pal.ink.opacity(0.42))
+            Button { NoteStore.shared.togglePin(id: note.id) } label: {
+                Image(systemName: note.pinned ? "pin.fill" : "pin")
+                    .font(.system(size: 11, weight: .semibold))
+                    .rotationEffect(.degrees(note.pinned ? 0 : 32))
+                    .frame(width: 18, height: 18)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(pal.ink.opacity(note.pinned ? 0.85 : 0.4))
+            .help(note.pinned ? "Unpin — ⌘P" : "Pin so it stays open  ⌘P")
+
             Button { deck.bridge.toggleTaskLine() } label: {
                 Image(systemName: "checklist")
                     .font(.system(size: 11, weight: .semibold))

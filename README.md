@@ -67,6 +67,7 @@ Inside a note:
 | `⌘.` | cycle its colour |
 | `⌘T` | turn the current line into a task, or strip the checkbox off |
 | `⌘⌫` | delete, with ten seconds to undo |
+| `⌘P` | pin the note so it stays open |
 | `⌃+` / `⌃-` | bigger / smaller note text |
 
 Standard editing (`⌘C` / `⌘V` / `⌘Z` / `⌘A`) works everywhere — the app builds a
@@ -100,6 +101,10 @@ import reads that back. All Notes shows a `done/total` count per note.
 - **Pick the face and the size.** Right-click the pill → *Note font* offers the
   installed faces that suit a note (a hand by default), and *Text size* or
   `⌃+` / `⌃-` sets the size. Tab labels follow the same face, a weight bolder.
+- **Pin a note to keep it open.** The pin in a note's header (or `⌘P`) stops it
+  being dismissed by anything you did not aim at it — clicking away in another
+  app, or leaving it idle. Esc and Close still close it. Pinned tabs carry a dot,
+  and the pin is remembered.
 - **Closing a note steps back to the deck.** Esc, Close, archiving or deleting
   leaves the tabs where they were; only moving away from the edge puts the deck
   back to sleep. Clicking in another app dismisses the whole thing.

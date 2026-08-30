@@ -30,6 +30,24 @@ final class Store {
         );
         """)
         exec("CREATE INDEX IF NOT EXISTS idx_notes_archived ON notes(archived, sort_order);")
+        migrate()
+    }
+
+    /// Adds columns introduced after a database was first created. Checked rather
+    /// than attempted-and-ignored, so a real failure still shows up in the log.
+    private func migrate() {
+        var existing = Set<String>()
+        var st: OpaquePointer?
+        if sqlite3_prepare_v2(db, "PRAGMA table_info(notes);", -1, &st, nil) == SQLITE_OK {
+            while sqlite3_step(st) == SQLITE_ROW {
+                if let c = sqlite3_column_text(st, 1) { existing.insert(String(cString: c)) }
+            }
+        }
+        sqlite3_finalize(st)
+        if !existing.contains("pinned") {
+            exec("ALTER TABLE notes ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0;")
+            NSLog("Noty: migrated notes table — added pinned")
+        }
     }
 
     deinit { if let db { sqlite3_close_v2(db) } }
@@ -47,7 +65,7 @@ final class Store {
     func load() -> [Note] {
         var out: [Note] = []
         var st: OpaquePointer?
-        let sql = "SELECT id,title,body,color,created,modified,archived,sort_order FROM notes ORDER BY sort_order ASC;"
+        let sql = "SELECT id,title,body,color,created,modified,archived,sort_order,pinned FROM notes ORDER BY sort_order ASC;"
         guard sqlite3_prepare_v2(db, sql, -1, &st, nil) == SQLITE_OK else { return out }
         defer { sqlite3_finalize(st) }
         while sqlite3_step(st) == SQLITE_ROW {
@@ -63,6 +81,7 @@ final class Store {
             n.modified = Date(timeIntervalSince1970: sqlite3_column_double(st, 5))
             n.archived = sqlite3_column_int(st, 6) != 0
             n.order = sqlite3_column_double(st, 7)
+            n.pinned = sqlite3_column_int(st, 8) != 0
             out.append(n)
         }
         return out
@@ -72,12 +91,12 @@ final class Store {
 
     func upsert(_ n: Note) {
         let sql = """
-        INSERT INTO notes (id,title,body,color,created,modified,archived,sort_order)
-        VALUES (?,?,?,?,?,?,?,?)
+        INSERT INTO notes (id,title,body,color,created,modified,archived,sort_order,pinned)
+        VALUES (?,?,?,?,?,?,?,?,?)
         ON CONFLICT(id) DO UPDATE SET
           title=excluded.title, body=excluded.body, color=excluded.color,
           modified=excluded.modified, archived=excluded.archived,
-          sort_order=excluded.sort_order;
+          sort_order=excluded.sort_order, pinned=excluded.pinned;
         """
         var st: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &st, nil) == SQLITE_OK else { return }
@@ -93,6 +112,7 @@ final class Store {
         sqlite3_bind_double(st, 6, n.modified.timeIntervalSince1970)
         sqlite3_bind_int(st, 7, n.archived ? 1 : 0)
         sqlite3_bind_double(st, 8, n.order)
+        sqlite3_bind_int(st, 9, n.pinned ? 1 : 0)
         if sqlite3_step(st) != SQLITE_DONE {
             NSLog("Noty: upsert failed — \(String(cString: sqlite3_errmsg(db)))")
         }
