@@ -231,3 +231,14 @@ Set `NOTY_DEBUG_DECK=1` in the environment to trace deck state transitions on st
 - No licensing, trial, or update machinery.
 - Ad-hoc signed and not notarised, so Gatekeeper will want a right-click → Open
   the first time if the app is moved off this machine.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Do what you like with it; keep the copyright
+notice.
+
+Noty bundles [Sparkle](https://github.com/sparkle-project/Sparkle) (also MIT)
+for updates. Its notice is reproduced in
+[licenses/THIRD-PARTY.txt](licenses/THIRD-PARTY.txt) and copied into
+`Noty.app/Contents/Resources/`, so it travels with every DMG as its licence
+requires.
