@@ -49,14 +49,15 @@ rule, so it reads as growing out of the deck rather than floating beside it.
 
 ## Shortcuts
 
-Global — registered through the Carbon hotkey API, so **no Accessibility
-permission is required**:
+All of these are listed in Settings (`⌘,`), and the first four can be rebound
+there. Global ones are registered through the Carbon hotkey API, so **no
+Accessibility permission is required**:
 
 | | |
 |---|---|
 | `⌥⌘N` | new note (opens it straight away) |
 | `⌥⌘A` | All Notes |
-| `⌥⌘L` | Archive |
+| `⌥⌘L` | the Archive window |
 
 Inside a note:
 
@@ -67,6 +68,7 @@ Inside a note:
 | `⌘.` | cycle its colour |
 | `⌘T` | turn the current line into a task, or strip the checkbox off |
 | `⌘⌫` | delete, with ten seconds to undo |
+| `⇧⌘A` | archive the note you are looking at |
 | `⌘P` | pin the note so it stays open |
 | `⌃+` / `⌃-` | bigger / smaller note text |
 
@@ -98,9 +100,14 @@ import reads that back. All Notes shows a `done/total` count per note.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
-- **Pick the face and the size.** Right-click the pill → *Note font* offers the
-  installed faces that suit a note (a hand by default), and *Text size* or
-  `⌃+` / `⌃-` sets the size. Tab labels follow the same face, a weight bolder.
+- **Settings** (`⌘,`, or right-click the pill). Rebind the shortcuts, pick the
+  note face and size, set how far from the edge the pointer wakes the deck,
+  and switch Markdown styling on or off. Everything applies immediately.
+- **Markdown as you type.** `# headings`, `**bold**`, `*italic*`, `` `code` ``,
+  `~~struck~~`, `> quotes` and `- bullets` are styled in place. The markers are
+  dimmed rather than hidden, so the stored text is exactly what you typed and
+  exports unchanged.
+- **Drag to reorder.** Press and hold a tab, then drag it up or down the deck.
 - **Pin a note to keep it open.** The pin in a note's header (or `⌘P`) stops it
   being dismissed by anything you did not aim at it — clicking away in another
   app, or leaving it idle. Esc and Close still close it. Pinned tabs carry a dot,

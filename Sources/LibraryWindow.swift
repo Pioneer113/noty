@@ -21,6 +21,8 @@ final class LibraryWindow: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private let model = LibraryModel()
 
+    var isOpen: Bool { window?.isVisible ?? false }
+
     func show(mode: LibraryMode) {
         model.mode = mode
         if model.selection == nil { model.selection = currentList().first?.id }
@@ -48,7 +50,8 @@ final class LibraryWindow: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        // Back to a menu-bar-less agent so the dock icon disappears again.
+        // Back to a menu-bar-less agent so the dock icon disappears again —
+        // unless Settings is still up.
         DispatchQueue.main.async { NSApp.setActivationPolicy(.accessory) }
     }
 }

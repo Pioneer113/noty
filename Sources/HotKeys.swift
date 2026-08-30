@@ -13,13 +13,29 @@ final class HotKeys {
 
     private init() {}
 
+    private var handlers: [(id: UInt32, shortcut: () -> Shortcut, action: () -> Void)] = []
+
     func register(newNote: @escaping () -> Void,
                   allNotes: @escaping () -> Void,
                   archive: @escaping () -> Void) {
+        handlers = [
+            (1, { Settings.scNewNote }, newNote),
+            (2, { Settings.scAllNotes }, allNotes),
+            (3, { Settings.scArchive }, archive),
+        ]
+        reload()
+    }
+
+    /// Re-reads the stored shortcuts and rebinds. Called after a change in
+    /// Settings, so a new combo takes effect without relaunching.
+    func reload() {
+        unregisterHotKeys()
         installHandler()
-        add(id: 1, key: UInt32(kVK_ANSI_N), mods: UInt32(optionKey | cmdKey), action: newNote)
-        add(id: 2, key: UInt32(kVK_ANSI_A), mods: UInt32(optionKey | cmdKey), action: allNotes)
-        add(id: 3, key: UInt32(kVK_ANSI_L), mods: UInt32(optionKey | cmdKey), action: archive)
+        for h in handlers {
+            let s = h.shortcut()
+            guard s.isSet else { continue }
+            add(id: h.id, key: s.keyCode, mods: s.modifiers, action: h.action)
+        }
     }
 
     private func installHandler() {
@@ -53,9 +69,14 @@ final class HotKeys {
         }
     }
 
-    func unregisterAll() {
+    private func unregisterHotKeys() {
         refs.compactMap { $0 }.forEach { UnregisterEventHotKey($0) }
         refs.removeAll()
         actions.removeAll()
+    }
+
+    func unregisterAll() {
+        unregisterHotKeys()
+        handlers.removeAll()
     }
 }

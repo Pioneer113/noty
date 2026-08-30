@@ -75,6 +75,48 @@ final class EditorBridge: ObservableObject {
     }
 }
 
+extension NSAttributedString.Key {
+    /// Marks Markdown punctuation that should take up no space on screen while
+    /// staying in the text storage, so what is saved is what was typed.
+    static let notyHidden = NSAttributedString.Key("notyHidden")
+}
+
+/// Collapses glyphs carrying `.notyHidden` to nothing. This is the only way to
+/// hide characters without deleting them: colouring them clear still leaves
+/// their width behind, and the caret still walks through them.
+final class HidingLayoutManager: NSLayoutManager {
+    override func setGlyphs(_ glyphs: UnsafePointer<CGGlyph>,
+                            properties props: UnsafePointer<NSLayoutManager.GlyphProperty>,
+                            characterIndexes charIndexes: UnsafePointer<Int>,
+                            font aFont: NSFont,
+                            forGlyphRange glyphRange: NSRange) {
+        guard let storage = textStorage else {
+            super.setGlyphs(glyphs, properties: props, characterIndexes: charIndexes,
+                            font: aFont, forGlyphRange: glyphRange)
+            return
+        }
+        var edited = Array(UnsafeBufferPointer(start: props, count: glyphRange.length))
+        var changed = false
+        for i in 0..<glyphRange.length {
+            let ci = charIndexes[i]
+            guard ci < storage.length else { continue }
+            if storage.attribute(.notyHidden, at: ci, effectiveRange: nil) != nil {
+                edited[i] = .null
+                changed = true
+            }
+        }
+        guard changed else {
+            super.setGlyphs(glyphs, properties: props, characterIndexes: charIndexes,
+                            font: aFont, forGlyphRange: glyphRange)
+            return
+        }
+        edited.withUnsafeBufferPointer { buf in
+            super.setGlyphs(glyphs, properties: buf.baseAddress!, characterIndexes: charIndexes,
+                            font: aFont, forGlyphRange: glyphRange)
+        }
+    }
+}
+
 // MARK: - NSTextView wrapper
 
 /// Text view that treats a leading ☐ / ☑ as a real checkbox: clicking the box
@@ -151,7 +193,16 @@ struct NoteTextView: NSViewRepresentable {
         scroll.autohidesScrollers = true
         scroll.borderType = .noBorder
 
-        let tv = TaskTextView()
+        // An explicit TextKit 1 stack: a plain NSTextView would get TextKit 2,
+        // where NSLayoutManager — and so the glyph hiding — is never consulted.
+        let storage = NSTextStorage()
+        let layout = HidingLayoutManager()
+        let container = NSTextContainer(size: NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude))
+        container.widthTracksTextView = true
+        layout.addTextContainer(container)
+        storage.addLayoutManager(layout)
+
+        let tv = TaskTextView(frame: .zero, textContainer: container)
         tv.autoresizingMask = [.width]
         tv.isVerticallyResizable = true
         tv.isHorizontallyResizable = false
@@ -214,9 +265,20 @@ struct NoteTextView: NSViewRepresentable {
         let caret = tv.selectedRange()
         storage.beginEditing()
         storage.removeAttribute(.strikethroughStyle, range: full)
+        storage.removeAttribute(.obliqueness, range: full)
+        storage.removeAttribute(.backgroundColor, range: full)
+        storage.removeAttribute(.notyHidden, range: full)
         storage.addAttribute(.foregroundColor, value: ink, range: full)
         storage.addAttribute(.font, value: font, range: full)
+
         let ns = storage.string as NSString
+        if Settings.markdownStyling {
+            let line = ns.lineRange(for: NSRange(location: min(caret.location, ns.length), length: 0))
+            markdown(storage, ns, full, ink: ink, size: size, revealing: line)
+        }
+
+        // Tasks are styled after Markdown so a completed task still reads as done
+        // even when its line also carries emphasis.
         ns.enumerateSubstrings(in: full, options: .byLines) { sub, range, _, _ in
             guard let sub, Tasks.marker(of: sub) == Tasks.done else { return }
             storage.addAttribute(.strikethroughStyle,
@@ -225,15 +287,115 @@ struct NoteTextView: NSViewRepresentable {
                                  value: ink.withAlphaComponent(0.45), range: range)
         }
         storage.endEditing()
+        // Hidden glyphs only disappear once the glyph cache is rebuilt.
+        tv.layoutManager?.invalidateGlyphs(forCharacterRange: full, changeInLength: 0,
+                                           actualCharacterRange: nil)
+        tv.layoutManager?.invalidateLayout(forCharacterRange: full, actualCharacterRange: nil)
         let end = (storage.string as NSString).length
         tv.setSelectedRange(NSRange(location: min(caret.location, end),
                                     length: min(caret.length, end - min(caret.location, end))))
         tv.window?.invalidateCursorRects(for: tv)
     }
 
+    /// Inline Markdown. The source stays plain text — markers are dimmed rather
+    /// than hidden, so what you typed is always what is stored.
+    private static func markdown(_ storage: NSTextStorage, _ ns: NSString,
+                                 _ full: NSRange, ink: NSColor, size: CGFloat,
+                                 revealing caretLine: NSRange) {
+        let faint = ink.withAlphaComponent(0.32)
+
+        func each(_ pattern: String, _ opts: NSRegularExpression.Options = [],
+                  _ body: (NSTextCheckingResult) -> Void) {
+            guard let re = try? NSRegularExpression(pattern: pattern, options: opts) else { return }
+            re.enumerateMatches(in: ns as String, range: full) { m, _, _ in
+                if let m { body(m) }
+            }
+        }
+        /// Punctuation is hidden — unless the caret is on that line, where it is
+        /// only dimmed, so the markers can still be seen and edited.
+        func dim(_ r: NSRange) {
+            if NSIntersectionRange(r, caretLine).length > 0 || caretLine.location == r.location {
+                storage.addAttribute(.foregroundColor, value: faint, range: r)
+            } else {
+                storage.addAttribute(.notyHidden, value: true, range: r)
+                storage.addAttribute(.foregroundColor, value: faint, range: r)
+            }
+        }
+
+        // # heading — bigger and bolder, hashes dimmed
+        each("^(#{1,6})[ \\t]+(.+)$", [.anchorsMatchLines]) { m in
+            let level = m.range(at: 1).length
+            let bump = max(1.5, 7 - CGFloat(level) * 1.1)
+            storage.addAttribute(.font, value: heavier(size + bump), range: m.range)
+            dim(m.range(at: 1))
+        }
+        // **bold** and __bold__
+        each("(\\*\\*|__)(?=\\S)(.+?)(?<=\\S)\\1") { m in
+            storage.addAttribute(.font, value: heavier(size), range: m.range(at: 2))
+            dim(NSRange(location: m.range.location, length: 2))
+            dim(NSRange(location: m.range.upperBound - 2, length: 2))
+        }
+        // *italic* and _italic_
+        each("(?<![\\*_])([\\*_])(?=[^\\*_\\s])(.+?)(?<=[^\\*_\\s])\\1(?![\\*_])") { m in
+            storage.addAttribute(.obliqueness, value: 0.2, range: m.range(at: 2))
+            dim(NSRange(location: m.range.location, length: 1))
+            dim(NSRange(location: m.range.upperBound - 1, length: 1))
+        }
+        // `code`
+        each("`([^`\\n]+)`") { m in
+            storage.addAttribute(.font, value: NSFont.monospacedSystemFont(ofSize: size - 0.5,
+                                                                          weight: .regular),
+                                 range: m.range(at: 1))
+            storage.addAttribute(.backgroundColor, value: ink.withAlphaComponent(0.07),
+                                 range: m.range(at: 1))
+            dim(NSRange(location: m.range.location, length: 1))
+            dim(NSRange(location: m.range.upperBound - 1, length: 1))
+        }
+        // ~~struck~~
+        each("~~(?=\\S)(.+?)(?<=\\S)~~") { m in
+            storage.addAttribute(.strikethroughStyle,
+                                 value: NSUnderlineStyle.single.rawValue, range: m.range(at: 1))
+            dim(NSRange(location: m.range.location, length: 2))
+            dim(NSRange(location: m.range.upperBound - 2, length: 2))
+        }
+        // > quote
+        each("^>[ \\t]?(.*)$", [.anchorsMatchLines]) { m in
+            storage.addAttribute(.foregroundColor, value: ink.withAlphaComponent(0.62),
+                                 range: m.range)
+            storage.addAttribute(.obliqueness, value: 0.15, range: m.range(at: 1))
+            dim(NSRange(location: m.range.location, length: 1))
+        }
+        // - bullet
+        each("^[ \\t]*([-*+])[ \\t]+", [.anchorsMatchLines]) { m in
+            storage.addAttribute(.foregroundColor, value: ink.withAlphaComponent(0.5),
+                                 range: m.range(at: 1))
+        }
+    }
+
+    /// A bolder cut of whatever face the note is set in.
+    private static func heavier(_ size: CGFloat) -> NSFont {
+        let base = bodyFont(size)
+        let bold = NSFontManager.shared.convert(base, toHaveTrait: .boldFontMask)
+        return bold != base ? bold : NSFont.systemFont(ofSize: size, weight: .semibold)
+    }
+
     final class Coordinator: NSObject, NSTextViewDelegate {
         let parent: NoteTextView
         init(_ p: NoteTextView) { parent = p }
+
+        private var lastLine = NSRange(location: NSNotFound, length: 0)
+
+        /// Moving the caret to another line changes which markers are revealed.
+        func textViewDidChangeSelection(_ notification: Notification) {
+            guard Settings.markdownStyling,
+                  let tv = notification.object as? NSTextView else { return }
+            let ns = tv.string as NSString
+            let caret = min(tv.selectedRange().location, ns.length)
+            let line = ns.lineRange(for: NSRange(location: caret, length: 0))
+            guard line.location != lastLine.location || line.length != lastLine.length else { return }
+            lastLine = line
+            NoteTextView.styleTasks(tv, ink: parent.ink, size: parent.fontSize)
+        }
 
         func textDidChange(_ notification: Notification) {
             guard let tv = notification.object as? NSTextView else { return }

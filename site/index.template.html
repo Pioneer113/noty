@@ -229,7 +229,7 @@ footer a{text-decoration-color:var(--rule)}
     <div class="hero">
       <div>
         <h1>Notes that live on the edge of your screen.</h1>
-        <p class="lede">Noty sleeps as a thin stripe against the screen edge. Reach over and it fans into paper tabs; click one and the note pulls out full size, right where it sat.</p>
+        <p class="lede">Noty sleeps as a thin stripe against the screen edge. Reach over and it fans into paper tabs; click one and the note pulls out full size, right where it sat. Checkbox tasks, Markdown that hides its own syntax, and every shortcut yours to change.</p>
         <div class="cta">
           <a class="btn" href="https://github.com/aimen08/noty/releases/latest/download/Noty.dmg">Download for macOS</a>
           <a class="btn ghost" href="https://github.com/aimen08/noty">Source on GitHub</a>
@@ -292,8 +292,12 @@ footer a{text-decoration-color:var(--rule)}
         <p>A fan you stop using collapses after a few seconds and an idle note closes after a minute. Pin a note and none of that touches it; it waits until you close it yourself.</p>
       </div>
       <div class="note settle" style="--paper:var(--p-slate);--pen:var(--i-slate);--tilt:1.5deg">
-        <h3>Set in your hand</h3>
-        <p>Notes are written in a handwriting face by default. Pick another from the pill's menu, and size it with <kbd>⌃+</kbd> and <kbd>⌃-</kbd>.</p>
+        <h3>Markdown, without the markup</h3>
+        <p><b>bold</b>, <i>italic</i>, code, headings, quotes and bullets style themselves as you type — and the syntax disappears. Put the caret on a line and its markers come back so you can edit them. The file on disk is still exactly what you typed.</p>
+      </div>
+      <div class="note settle" style="--paper:var(--p-peach);--pen:var(--i-peach);--tilt:1.5deg">
+        <h3>Bend it to fit</h3>
+        <p>Every shortcut is rebindable, in and out of a note. Pick the note face and size, choose how far from the edge the pointer wakes the deck, and drag a tab to reorder the deck. Settings is <kbd>⌘,</kbd>.</p>
       </div>
       <div class="note settle" style="--paper:var(--p-sand);--pen:var(--i-sand);--tilt:1.5deg">
         <h3>Yours to take with you</h3>
@@ -336,21 +340,22 @@ strings ~/Library/Application\ Support/Noty/notes.db \
     </div>
     <div class="split">
       <div class="keys">
-        <div class="keygroup eyebrow">Anywhere</div>
+        <div class="keygroup eyebrow">Anywhere · all rebindable</div>
         <div class="keyrow"><kbd>⌥⌘N</kbd><span>New note, opened straight away</span></div>
         <div class="keyrow"><kbd>⌥⌘A</kbd><span>All Notes — search across everything</span></div>
         <div class="keyrow"><kbd>⌥⌘L</kbd><span>Archive</span></div>
-        <div class="keygroup eyebrow">Inside a note</div>
+        <div class="keygroup eyebrow">Inside a note · all rebindable</div>
         <div class="keyrow"><kbd>Esc</kbd><span>Close it</span></div>
         <div class="keyrow"><kbd>⌘F</kbd><span>Find in note</span></div>
         <div class="keyrow"><kbd>⌘T</kbd><span>Turn the line into a task</span></div>
         <div class="keyrow"><kbd>⌘.</kbd><span>Cycle its colour</span></div>
+      <div class="keyrow"><kbd>⇧⌘A</kbd><span>Archive this note</span></div>
       <div class="keyrow"><kbd>⌘P</kbd><span>Pin it open</span></div>
         <div class="keyrow"><kbd>⌘⌫</kbd><span>Delete, with ten seconds to undo</span></div>
         <div class="keyrow"><kbd>⌃+ ⌃-</kbd><span>Bigger and smaller note text</span></div>
       </div>
       <div>
-        <div class="note" style="--paper:var(--p-peach);--pen:var(--i-peach);--tilt:1.5deg">
+        <div class="note" style="--paper:var(--p-lemon);--pen:var(--i-lemon);--tilt:1.5deg">
           <h3>Built with swiftc, not Xcode</h3>
           <p>One compiler invocation over a folder of Swift files, plus a script that assembles the bundle and signs it. Around 3,000 lines, no third-party packages.</p>
         </div>

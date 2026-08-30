@@ -38,6 +38,7 @@ final class DeckModel: ObservableObject {
     @Published var style: DeckStyle = Settings.deckStyle
     @Published var onLeftEdge: Bool = Settings.deckOnLeftEdge
     @Published var fontSize: Double = Settings.noteFontSize
+    @Published var markdown: Bool = Settings.markdownStyling
     /// Published by the controller the instant the panel is resized. Reading this
     /// instead of a GeometryReader matters: the reader reports the *previous* size
     /// for a frame or two after a resize, and the deck lays out against the wrong
@@ -48,6 +49,7 @@ final class DeckModel: ObservableObject {
         style = Settings.deckStyle
         onLeftEdge = Settings.deckOnLeftEdge
         fontSize = Settings.noteFontSize
+        markdown = Settings.markdownStyling
     }
 }
 
@@ -127,7 +129,9 @@ final class DeckController: NSObject {
         switch state {
         case .rest:
             let h = DeckGeom.pillHeight(noteCount: max(1, NoteStore.shared.active.count))
-            let w = DeckGeom.pillTouchWidth
+            // The dormant panel is the detection strip: the pill is drawn at the
+            // edge and the rest of the width is transparent and click-through.
+            let w = max(DeckGeom.pillWidth + 2, CGFloat(Settings.edgeWidth))
             frame = NSRect(x: onRight ? full.maxX - w : full.minX,
                            y: vis.midY - h / 2, width: w, height: h)
         case .fan, .expanded:
@@ -314,54 +318,44 @@ final class DeckController: NSObject {
             guard let self,
                   let id = self.model.state.expandedID,
                   self.panel.isKeyWindow else { return event }
-            let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            self.noteActivity()
 
-            if event.keyCode == 53 {                                  // Esc
+            // Close first: while the find bar is up it takes the key instead.
+            if Settings.scClose.matches(event) {
                 if self.model.findQuery != nil { self.model.findQuery = nil }
                 else { self.collapse() }
                 return nil
             }
-            if mods == .control {
-                switch event.charactersIgnoringModifiers {
-                case "+", "=":
-                    (NSApp.delegate as? AppDelegate)?.stepFontSize(by: 1.5)
-                    self.noteActivity()
-                    return nil
-                case "-", "_":
-                    (NSApp.delegate as? AppDelegate)?.stepFontSize(by: -1.5)
-                    self.noteActivity()
-                    return nil
-                default: break
-                }
+            if Settings.scArchiveNote.matches(event) {
+                NoteStore.shared.setArchived(id: id, true); self.collapse(); return nil
             }
-            self.noteActivity()
-            guard mods == .command else { return event }
-            if event.keyCode == 51 {                                  // ⌘⌫
-                NoteStore.shared.delete(id: id)
-                self.collapse()
-                return nil
+            if Settings.scDelete.matches(event) {
+                NoteStore.shared.delete(id: id); self.collapse(); return nil
             }
-            switch event.charactersIgnoringModifiers?.lowercased() {
-            case ".":
-                NoteStore.shared.cycleColor(id: id)
-                return nil
-            case "f":
-                self.model.findQuery = self.model.findQuery == nil ? "" : nil
-                return nil
-            case "t":
-                self.model.bridge.toggleTaskLine()
-                return nil
-            case "p":
-                NoteStore.shared.togglePin(id: id)
-                return nil
-            default:
-                return event
+            if Settings.scFind.matches(event) {
+                self.model.findQuery = self.model.findQuery == nil ? "" : nil; return nil
             }
+            if Settings.scTask.matches(event) {
+                self.model.bridge.toggleTaskLine(); return nil
+            }
+            if Settings.scPin.matches(event) {
+                NoteStore.shared.togglePin(id: id); return nil
+            }
+            if Settings.scColour.matches(event) {
+                NoteStore.shared.cycleColor(id: id); return nil
+            }
+            if Settings.scBigger.matches(event) {
+                (NSApp.delegate as? AppDelegate)?.stepFontSize(by: 1.5); return nil
+            }
+            if Settings.scSmaller.matches(event) {
+                (NSApp.delegate as? AppDelegate)?.stepFontSize(by: -1.5); return nil
+            }
+            return event
         }
     }
 
-    /// A click in any other app dismisses the open note. Mouse-only global monitors
-    /// need no Accessibility permission.
+    /// A click in any other app dismisses the open note. Mouse-only global
+    /// monitors need no Accessibility permission.
     private func installOutsideMonitor() {
         guard outsideMonitor == nil else { return }
         outsideMonitor = NSEvent.addGlobalMonitorForEvents(
@@ -467,6 +461,7 @@ final class DeckController: NSObject {
         menu.addItem(exportItem)
         menu.addItem(withTitle: "Import…", action: #selector(AppDelegate.importStickies), keyEquivalent: "")
         menu.addItem(.separator())
+        menu.addItem(withTitle: "Settings…", action: #selector(AppDelegate.openSettings), keyEquivalent: "")
         menu.addItem(withTitle: "Quit Noty", action: #selector(AppDelegate.quit), keyEquivalent: "")
 
         for item in menu.items where item.action != nil {

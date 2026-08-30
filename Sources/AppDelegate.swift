@@ -32,6 +32,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openAllNotes() { LibraryWindow.shared.show(mode: .all) }
+    @objc func openSettings() { SettingsWindow.shared.show() }
+
+    /// Re-read preferences into every deck. Settings calls this on each change.
+    func refreshDecks() { deckManager.refreshAll() }
     @objc func openArchive() { LibraryWindow.shared.show(mode: .archive) }
 
     @objc func toggleOverFullScreen() {
@@ -124,6 +128,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         appMenu.addItem(withTitle: "New Note", action: #selector(newNote), keyEquivalent: "n")
         appMenu.addItem(withTitle: "All Notes", action: #selector(openAllNotes), keyEquivalent: "a")
         appMenu.addItem(withTitle: "Archive", action: #selector(openArchive), keyEquivalent: "l")
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Import…", action: #selector(importStickies), keyEquivalent: "i")
         appMenu.addItem(.separator())

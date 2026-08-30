@@ -103,6 +103,23 @@ final class NoteStore: ObservableObject {
         pendingUndo = nil
     }
 
+    /// Move a note `slots` positions up or down the deck, rewriting the order
+    /// column densely so repeated drags cannot drift the values apart.
+    func reorder(id: String, by slots: Int) {
+        var list = active
+        guard slots != 0, let from = list.firstIndex(where: { $0.id == id }) else { return }
+        let to = min(max(0, from + slots), list.count - 1)
+        guard to != from else { return }
+        let moved = list.remove(at: from)
+        list.insert(moved, at: to)
+        for (rank, n) in list.enumerated() {
+            guard let i = notes.firstIndex(where: { $0.id == n.id }),
+                  notes[i].order != Double(rank) else { continue }
+            notes[i].order = Double(rank)
+            store.upsert(notes[i])
+        }
+    }
+
     func move(id: String, before otherID: String?) {
         guard let i = notes.firstIndex(where: { $0.id == id }) else { return }
         let list = active

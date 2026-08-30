@@ -122,6 +122,8 @@ struct FanColumn: View {
     let onRight: Bool
 
     @State private var revealed = false
+    @State private var dragID: String?
+    @State private var dragDY: CGFloat = 0
 
     var body: some View {
         ZStack(alignment: onRight ? .trailing : .leading) {
@@ -171,9 +173,16 @@ struct FanColumn: View {
                                     height: layout.itemHeight,
                                     strip: layout.pitch,
                                     onRight: onRight,
+                                    lifted: dragID == note.id,
                                     action: { open(note) })
                     }
                 }
+                .offset(y: dragID == note.id ? dragDY : 0)
+                // Only the tab being dragged is raised. Giving *every* tab a
+                // zIndex reorders neighbours and breaks the shingle; leaving the
+                // rest at the default keeps their declaration order intact.
+                .zIndex(dragID == note.id ? 900 : 0)
+                .simultaneousGesture(reorderGesture(note))
                 .staged(index: idx, revealed: revealed, onRight: onRight)
             }
             if hiddenCount > 0 {
@@ -188,6 +197,28 @@ struct FanColumn: View {
                 .staged(index: notes.count + 1, revealed: revealed, onRight: onRight)
         }
         .frame(width: DeckGeom.tabWidth)
+    }
+
+    /// Press and hold a tab, then drag it up or down to reshuffle the deck.
+    private func reorderGesture(_ note: Note) -> some Gesture {
+        LongPressGesture(minimumDuration: 0.28)
+            .sequenced(before: DragGesture(minimumDistance: 0))
+            .onChanged { value in
+                guard case .second(true, let drag) = value else { return }
+                if dragID != note.id { dragID = note.id }
+                dragDY = drag?.translation.height ?? 0
+            }
+            .onEnded { value in
+                if case .second(true, let drag) = value {
+                    let dy = drag?.translation.height ?? 0
+                    let slots = Int((dy / max(1, layout.pitch)).rounded())
+                    NoteStore.shared.reorder(id: note.id, by: slots)
+                }
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.8)) {
+                    dragID = nil
+                    dragDY = 0
+                }
+            }
     }
 
     private func open(_ note: Note) {
@@ -251,6 +282,7 @@ struct VerticalTab: View {
     let height: CGFloat
     let strip: CGFloat          // the part of this tab the next one does not cover
     let onRight: Bool
+    var lifted: Bool = false
     let action: () -> Void
 
     @State private var hovering = false
@@ -260,9 +292,9 @@ struct VerticalTab: View {
             ZStack(alignment: .top) {
                 edgeTabShape(onRight: onRight)
                     .fill(note.palette.paper)
-                    .shadow(color: .black.opacity(isOpen || hovering ? 0.32 : 0.22),
-                            radius: isOpen || hovering ? 9 : 6,
-                            x: onRight ? -3 : 3, y: 2)
+                    .shadow(color: .black.opacity(lifted ? 0.42 : (isOpen || hovering ? 0.32 : 0.22)),
+                            radius: lifted ? 16 : (isOpen || hovering ? 9 : 6),
+                            x: onRight ? -3 : 3, y: lifted ? 6 : 2)
                 Text(note.displayTitle.uppercased())
                     .font(Ink.tabFont)
                     .tracking(Ink.tabTracking)
@@ -276,6 +308,7 @@ struct VerticalTab: View {
                     .offset(x: onRight ? -DeckGeom.bleed / 2 : DeckGeom.bleed / 2)
             }
             .frame(width: DeckGeom.tabWidth + DeckGeom.bleed, height: height, alignment: .top)
+            .scaleEffect(lifted ? 1.04 : 1, anchor: onRight ? .trailing : .leading)
             .rotationEffect(.degrees(DeckGeom.lean(onRight: onRight)), anchor: onRight ? .trailing : .leading)
             .offset(x: onRight ? DeckGeom.bleed : -DeckGeom.bleed)
             .frame(width: DeckGeom.tabWidth)
@@ -294,6 +327,7 @@ struct VerticalTab: View {
         .onHover { hovering = $0 }
         .animation(.spring(response: 0.28, dampingFraction: 0.8), value: isOpen)
         .animation(.easeOut(duration: 0.14), value: hovering)
+        .animation(.spring(response: 0.26, dampingFraction: 0.75), value: lifted)
         .noteContextMenu(note)
         .help(note.displayTitle)
     }
