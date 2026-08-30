@@ -61,8 +61,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func biggerText()  { stepFontSize(by: 1.5) }
     @objc func smallerText() { stepFontSize(by: -1.5) }
 
-    @objc func toggleHandwriting() {
-        Settings.handwrittenBody.toggle()
+    @objc func setNoteFont(_ sender: NSMenuItem) {
+        guard let name = sender.representedObject as? String else { return }
+        Settings.noteFontName = name
         deckManager.refreshAll()
     }
 

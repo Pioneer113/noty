@@ -396,10 +396,17 @@ final class DeckController: NSObject {
         styleItem.submenu = styleMenu
         menu.addItem(styleItem)
 
-        let hand = NSMenuItem(title: "Handwritten note text",
-                              action: #selector(AppDelegate.toggleHandwriting), keyEquivalent: "")
-        hand.state = Settings.handwrittenBody ? .on : .off
-        menu.addItem(hand)
+        let fontItem = NSMenuItem(title: "Note font", action: nil, keyEquivalent: "")
+        let fontMenu = NSMenu()
+        for f in Ink.faces {
+            let it = NSMenuItem(title: f.name, action: #selector(AppDelegate.setNoteFont(_:)),
+                                keyEquivalent: "")
+            it.representedObject = f.body
+            it.state = Ink.face.body == f.body ? .on : .off
+            fontMenu.addItem(it)
+        }
+        fontItem.submenu = fontMenu
+        menu.addItem(fontItem)
 
         let textItem = NSMenuItem(title: "Text size", action: nil, keyEquivalent: "")
         let textMenu = NSMenu()

@@ -97,6 +97,9 @@ import reads that back. All Notes shows a `done/total` count per note.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
+- **Pick the face and the size.** Right-click the pill → *Note font* offers the
+  installed faces that suit a note (a hand by default), and *Text size* or
+  `⌃+` / `⌃-` sets the size. Tab labels follow the same face, a weight bolder.
 - **Closing a note steps back to the deck.** Esc, Close, archiving or deleting
   leaves the tabs where they were; only moving away from the edge puts the deck
   back to sleep. Clicking in another app dismisses the whole thing.

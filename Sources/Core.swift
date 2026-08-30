@@ -82,35 +82,67 @@ struct NoteColor {
 
 // MARK: - Type
 
+/// One entry per face offered for note bodies.
+struct NoteFace {
+    let name: String          // shown in the menu
+    let body: String          // PostScript name, "" for the system font
+    let tab: String           // heavier cut used on the tab labels
+    let bump: CGFloat         // size nudge so faces look the same size as each other
+}
+
 enum Ink {
-    /// The hand used on note bodies. Noteworthy Light is the closest thing macOS
-    /// ships to a neat felt-tip; the system face is the fallback and the setting.
-    static func body(_ size: CGFloat) -> NSFont {
-        guard Settings.handwrittenBody else { return .systemFont(ofSize: size) }
-        return NSFont(name: "Noteworthy-Light", size: size + 1.5)
-            ?? NSFont(name: "BradleyHandITCTT-Bold", size: size + 1.5)
-            ?? .systemFont(ofSize: size)
+    /// Faces that suit a note. Filtered to what is actually installed, so the
+    /// menu never offers something that would silently fall back.
+    static let allFaces: [NoteFace] = [
+        NoteFace(name: "System",       body: "",                     tab: "",                     bump: 0),
+        NoteFace(name: "Noteworthy",   body: "Noteworthy-Light",     tab: "Noteworthy-Bold",      bump: 1.5),
+        NoteFace(name: "Bradley Hand", body: "BradleyHandITCTT-Bold", tab: "BradleyHandITCTT-Bold", bump: 1.5),
+        NoteFace(name: "Marker Felt",  body: "MarkerFelt-Thin",      tab: "MarkerFelt-Wide",      bump: 1),
+        NoteFace(name: "Chalkboard",   body: "ChalkboardSE-Light",   tab: "ChalkboardSE-Bold",    bump: 0),
+        NoteFace(name: "Avenir Next",  body: "AvenirNext-Regular",   tab: "AvenirNext-DemiBold",  bump: 0),
+        NoteFace(name: "New York",     body: "NewYork-Regular",      tab: "NewYork-Semibold",     bump: 0),
+        NoteFace(name: "Georgia",      body: "Georgia",              tab: "Georgia-Bold",         bump: 0),
+        NoteFace(name: "Menlo",        body: "Menlo-Regular",        tab: "Menlo-Bold",           bump: -1),
+    ]
+
+    static var faces: [NoteFace] {
+        allFaces.filter { $0.body.isEmpty || NSFont(name: $0.body, size: 12) != nil }
     }
 
-    // Tab labels are set in the same hand as the notes, a shade bolder so they
-    // hold up at this size and turned on their side.
+    static var face: NoteFace {
+        let want = Settings.noteFontName
+        return faces.first { $0.body == want } ?? faces[0]
+    }
+
+    /// The hand (or face) note bodies are set in.
+    static func body(_ size: CGFloat) -> NSFont {
+        let f = face
+        guard !f.body.isEmpty, let font = NSFont(name: f.body, size: size + f.bump) else {
+            return .systemFont(ofSize: size)
+        }
+        return font
+    }
+
+    // Tab labels use the same face a shade bolder, so they hold up turned on
+    // their side at this size.
     static let tabSize: CGFloat = 9.5
     static let tabTracking: CGFloat = 0.1
-    private static let tabFace = "Noteworthy-Bold"
-
-    private static var handAvailable: Bool {
-        Settings.handwrittenBody && NSFont(name: tabFace, size: tabSize) != nil
-    }
 
     /// For measuring — layout sizes each tab's strip to the longest label.
     static var tabNSFont: NSFont {
-        handAvailable ? NSFont(name: tabFace, size: tabSize)!
-                      : .systemFont(ofSize: 9, weight: .semibold)
+        let f = face
+        guard !f.tab.isEmpty, let font = NSFont(name: f.tab, size: tabSize + f.bump) else {
+            return .systemFont(ofSize: 9, weight: .semibold)
+        }
+        return font
     }
 
     static var tabFont: Font {
-        handAvailable ? .custom(tabFace, size: tabSize)
-                      : .system(size: 9, weight: .semibold)
+        let f = face
+        guard !f.tab.isEmpty, NSFont(name: f.tab, size: tabSize) != nil else {
+            return .system(size: 9, weight: .semibold)
+        }
+        return .custom(f.tab, size: tabSize + f.bump)
     }
 }
 

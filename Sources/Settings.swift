@@ -35,10 +35,16 @@ enum Settings {
                     forKey: "noteFontSize") }
     }
 
-    /// Note bodies in a hand, the way a sticky note actually looks.
-    static var handwrittenBody: Bool {
-        get { d.object(forKey: "handwrittenBody") as? Bool ?? true }
-        set { d.set(newValue, forKey: "handwrittenBody") }
+    /// PostScript name of the face note bodies are set in; empty means the
+    /// system font. Defaults to a hand, the way a sticky note actually looks.
+    static var noteFontName: String {
+        get {
+            if let v = d.string(forKey: "noteFontName") { return v }
+            // migrate the old boolean
+            let hand = d.object(forKey: "handwrittenBody") as? Bool ?? true
+            return hand ? "Noteworthy-Light" : ""
+        }
+        set { d.set(newValue, forKey: "noteFontName") }
     }
 
     /// How long the deck may sit untouched before it tidies itself away.
