@@ -6,13 +6,13 @@
     <description>Sticky notes that live at the edge of your screen.</description>
     <language>en</language>
     <item>
-      <title>1.0.7</title>
-      <pubDate>Sun, 30 Aug 2026 04:03:48 +0000</pubDate>
-      <sparkle:version>26</sparkle:version>
-      <sparkle:shortVersionString>1.0.7</sparkle:shortVersionString>
+      <title>1.0.8</title>
+      <pubDate>Sun, 30 Aug 2026 17:59:17 +0000</pubDate>
+      <sparkle:version>29</sparkle:version>
+      <sparkle:shortVersionString>1.0.8</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>Let a note be pinned so nothing implicit closes it<br><br>A pinned note ignores everything the user did not aim at it: clicking away in<br>another app, and the idle timeout. Esc, Close, archive and delete still work,<br>since those are deliberate.<br><br>- New `pinned` column, added by a checked migration rather than an<br>  attempt-and-ignore, so a real failure still surfaces in the log.<br>- Pin in the note header, ⌘P, and a Pin item on the tab&#x27;s context menu.<br>- Pinned tabs carry a dot, and the flag persists.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
-      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.7/Noty-1.0.7.dmg" type="application/octet-stream" sparkle:edSignature="0mLeeAxJ+25GhHi3q9grSMBgBf/3CHwBfL7vWWoGvb8E309p6ON7+6z3fjTPT7wdo/krdhWzzjOsM8ZihYYlBw==" length="1676952" />
+      <description><![CDATA[<p>Settings window: rebindable shortcuts, Markdown styling, deck controls<br><br>Adds a Settings window (⌘, or the pill&#x27;s menu) where everything applies live.<br><br>Shortcuts — all twelve are now rebindable, not just the three global ones. The<br>recorder has to intercept performKeyEquivalent as well as keyDown, or a<br>combination matching a menu item is swallowed by the menu before the field sees<br>it. In-note shortcuts accept a bare key (Close defaults to plain esc) because<br>they are matched by the open note itself; the global ones still refuse a<br>modifier-less combination, which would swallow that key system-wide. Key names<br>come from the live keyboard layout via UCKeyTranslate.<br><br>Markdown — headings, emphasis, code, strikethrough, quotes and bullets style<br>themselves as you type, and the syntax is hidden rather than dimmed. Hiding<br>characters without deleting them means marking their glyphs .null in a<br>NSLayoutManager subclass; colouring them clear leaves their width behind and the<br>caret still walks through them. That in turn means building an explicit TextKit<br>1 stack, since a plain NSTextView gets TextKit 2 where NSLayoutManager is never<br>consulted. Markers reappear on the caret&#x27;s line so they stay editable, and the<br>stored text is untouched either way.<br><br>Also: ⇧⌘A archives the note in front of you — ⌥⌘L only ever opened the archive<br>window. Detection area is configurable, and a tab can be press-held and dragged<br>to reorder the deck.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.8/Noty-1.0.8.dmg" type="application/octet-stream" sparkle:edSignature="3kNJSDSB78nE6Bas/+w8JPQBhVvSGZwFkmZimY65zlrQBR9H+0go5rnOqzKe0g8tF6NubHLpksCOeYSuxwDCAQ==" length="1759598" />
     </item>
   </channel>
 </rss>
