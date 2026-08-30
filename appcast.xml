@@ -6,13 +6,13 @@
     <description>Sticky notes that live at the edge of your screen.</description>
     <language>en</language>
     <item>
-      <title>1.0.6</title>
-      <pubDate>Sun, 30 Aug 2026 03:34:33 +0000</pubDate>
-      <sparkle:version>24</sparkle:version>
-      <sparkle:shortVersionString>1.0.6</sparkle:shortVersionString>
+      <title>1.0.7</title>
+      <pubDate>Sun, 30 Aug 2026 04:03:48 +0000</pubDate>
+      <sparkle:version>26</sparkle:version>
+      <sparkle:shortVersionString>1.0.7</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<p>Add a note font picker, and stop typing jumping after a font change<br><br>Changing the size while a note was open made typing jump, and closing and<br>reopening the note fixed it — the tell that the view&#x27;s state was stale rather<br>than the layout being wrong. `tv.font` was updated but `typingAttributes` was<br>not, so each new character was inserted in the *previous* font and then<br>rewritten by the restyle pass on the next keystroke. Restyling also rewrote the<br>whole document without putting the caret back.<br><br>- typingAttributes are refreshed whenever the face, size or ink changes.<br>- The selection is saved and restored across the restyle.<br>- Note font is now a choice, not a handwriting on/off: a curated list filtered<br>  to the faces actually installed, so the menu never offers one that would<br>  silently fall back. Tab labels follow the same face a weight bolder.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
-      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.6/Noty-1.0.6.dmg" type="application/octet-stream" sparkle:edSignature="jPFC9hsfg+jPfGAbcxiEWvkt/KSTjTi442UJNPr+QEGEqxZbF7fSkgUkELFjZjvtVOmJovyWjNQeqrVdLhayAQ==" length="1668721" />
+      <description><![CDATA[<p>Let a note be pinned so nothing implicit closes it<br><br>A pinned note ignores everything the user did not aim at it: clicking away in<br>another app, and the idle timeout. Esc, Close, archive and delete still work,<br>since those are deliberate.<br><br>- New `pinned` column, added by a checked migration rather than an<br>  attempt-and-ignore, so a real failure still surfaces in the log.<br>- Pin in the note header, ⌘P, and a Pin item on the tab&#x27;s context menu.<br>- Pinned tabs carry a dot, and the flag persists.<br><br>Co-Authored-By: Claude Opus 5 (1M context) &lt;noreply@anthropic.com&gt;<br>Claude-Session: https://claude.ai/code/session_0121rEjp7UYPBnRHZ9N1dSUp</p>]]></description>
+      <enclosure url="https://github.com/aimen08/noty/releases/download/v1.0.7/Noty-1.0.7.dmg" type="application/octet-stream" sparkle:edSignature="0mLeeAxJ+25GhHi3q9grSMBgBf/3CHwBfL7vWWoGvb8E309p6ON7+6z3fjTPT7wdo/krdhWzzjOsM8ZihYYlBw==" length="1676952" />
     </item>
   </channel>
 </rss>
