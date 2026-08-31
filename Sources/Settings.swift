@@ -200,6 +200,24 @@ enum Settings {
         set { d.set(newValue, forKey: "deckAlwaysShown") }
     }
 
+    /// Multiplier on every deck metric — tab width, label type, the lap between
+    /// tabs, the chips and the pill. One knob so the deck scales as a whole
+    /// instead of drifting out of proportion with itself.
+    static let deckScaleRange: ClosedRange<Double> = 0.7...1.8
+
+    static let deckSizes: [(name: String, scale: Double)] = [
+        ("Small", 0.85), ("Default", 1.0), ("Large", 1.25), ("Extra large", 1.5)
+    ]
+
+    static var deckScale: Double {
+        get {
+            let v = d.double(forKey: "deckScale")
+            return deckScaleRange.contains(v) ? v : 1.0
+        }
+        set { d.set(min(max(newValue, deckScaleRange.lowerBound), deckScaleRange.upperBound),
+                    forKey: "deckScale") }
+    }
+
     /// Labelled tabs, or bare colour chips that barely touch the screen.
     static var deckStyle: DeckStyle {
         get { DeckStyle(rawValue: d.string(forKey: "deckStyle") ?? "") ?? .tabs }

@@ -100,6 +100,7 @@ struct ShortcutField: NSViewRepresentable {
 final class SettingsModel: ObservableObject {
     @Published var deckStyle: DeckStyle { didSet { Settings.deckStyle = deckStyle; apply() } }
     @Published var alwaysShown: Bool    { didSet { Settings.deckAlwaysShown = alwaysShown; apply() } }
+    @Published var deckScale: Double    { didSet { Settings.deckScale = deckScale; apply() } }
     @Published var onLeftEdge: Bool     { didSet { Settings.deckOnLeftEdge = onLeftEdge; apply() } }
     @Published var displayTarget: String { didSet { Settings.displayTarget = displayTarget; apply() } }
     @Published var screens: [NSScreen] = NSScreen.screens
@@ -132,6 +133,7 @@ final class SettingsModel: ObservableObject {
     init() {
         deckStyle = Settings.deckStyle
         alwaysShown = Settings.deckAlwaysShown
+        deckScale = Settings.deckScale
         onLeftEdge = Settings.deckOnLeftEdge
         displayTarget = Settings.displayTarget
         screens = NSScreen.screens
@@ -260,6 +262,20 @@ struct SettingsView: View {
                         Picker("", selection: $model.deckStyle) {
                             ForEach(DeckStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                         }.labelsHidden().pickerStyle(.segmented).frame(width: 240)
+                    }
+                    row("Size") {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 10) {
+                                Slider(value: $model.deckScale,
+                                       in: Settings.deckScaleRange.lowerBound...Settings.deckScaleRange.upperBound,
+                                       step: 0.05).frame(width: 210)
+                                Text("\(Int((model.deckScale * 100).rounded()))%")
+                                    .font(.system(size: 11).monospacedDigit())
+                                    .foregroundStyle(.secondary).frame(width: 52, alignment: .leading)
+                            }
+                            Text("Scales the tabs, their labels, the chips and the resting pill together.")
+                                .font(.system(size: 11)).foregroundStyle(.secondary)
+                        }
                     }
                     if model.screens.count > 1 {
                         row("Display") {
