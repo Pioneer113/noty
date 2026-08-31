@@ -36,7 +36,7 @@ mkdir -p build
 git rev-list "$RANGE" > build/.release-commits
 
 VERSION="$VERSION" REPO="$REPO" PREV="$PREV" python3 - <<'PY'
-import html, json, os, subprocess, pathlib
+import html, json, os, re, subprocess, pathlib
 
 version = os.environ["VERSION"]
 repo    = os.environ["REPO"]
@@ -72,7 +72,43 @@ def merged_pulls():
     out.sort(key=lambda p: p["number"])
     return out
 
+def credited():
+    """People whose work shipped without a pull request of their own being
+    merged — a cherry-pick, or a branch only part of which was taken. Recorded
+    as a `Thanks-to: @handle — what for` trailer on the commit that took it, so
+    the credit lives with the change instead of in a file someone has to
+    remember to clear. `Co-Authored-By:` is picked up as well."""
+    rng = [f"{prev}..HEAD"] if prev else ["HEAD"]
+    log = subprocess.run(["git", "log", *rng, "--pretty=%B%x00"],
+                         capture_output=True, text=True).stdout
+    out, seen = [], set()
+    for message in log.split("\0"):
+        for line in message.splitlines():
+            line = line.strip()
+            m = re.match(r"(?i)^thanks-to:\s*@?([A-Za-z0-9][A-Za-z0-9-]*)"
+                         r"\s*(?:[\u2014:-]\s*(.*))?$", line)
+            if m:
+                handle, why = m.group(1), (m.group(2) or "").strip()
+            else:
+                m = re.match(r"(?i)^co-authored-by:\s*.+?\s*<(.+?)>$", line)
+                if not m:
+                    continue
+                # Only a co-author who resolves to a real GitHub account. Tool
+                # and bot trailers use their own domains and have no profile to
+                # link to; release notes are for the people who wrote the code.
+                gh = re.match(r"^\d+\+([A-Za-z0-9-]+)@users\.noreply\.github\.com$",
+                              m.group(1))
+                if not gh:
+                    continue
+                handle, why = gh.group(1), ""
+            if handle.lower() in seen:
+                continue
+            seen.add(handle.lower())
+            out.append((handle, why))
+    return out
+
 pulls = merged_pulls()
+thanks = credited()
 
 md, items = [], []
 if pulls:
@@ -97,6 +133,13 @@ else:
             items.append((None, None, s, None))
         md.append("")
 
+if thanks:
+    md.append("## Thanks\n")
+    for handle, why in thanks:
+        link = f"[@{handle}](https://github.com/{handle})"
+        md.append(f"- {link}{' — ' + why if why else ''}")
+    md.append("")
+
 if prev:
     compare = f"https://github.com/{repo}/compare/{prev}...v{version}"
     md.append(f"**Full changelog**: [{prev}...v{version}]({compare})")
@@ -116,6 +159,9 @@ for number, url, title, who in items:
 body = f"<p>Noty {html.escape(version)}</p>"
 if rows:
     body += "<ul>" + "".join(rows) + "</ul>"
+if thanks:
+    names = ", ".join(f"@{html.escape(h)}" for h, _ in thanks)
+    body += f"<p>Thanks to {names}.</p>"
 pathlib.Path("build/release-notes.html").write_text(body)
 
 print(markdown)
