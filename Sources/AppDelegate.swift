@@ -76,6 +76,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         deckManager.refreshAll()
     }
 
+    @objc func setDisplayTarget(_ sender: NSMenuItem) {
+        guard let target = sender.representedObject as? String else { return }
+        Settings.displayTarget = target
+        SettingsWindow.shared.syncPreferences()
+    }
+
     @objc func toggleLaunchAtLogin() {
         Settings.launchAtLogin.toggle()
     }

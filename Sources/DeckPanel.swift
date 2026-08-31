@@ -215,6 +215,14 @@ final class DeckContentView: NSView {
     override func mouseEntered(with event: NSEvent) { controller?.pointerEntered() }
     override func mouseExited(with event: NSEvent) { controller?.pointerExited() }
 
+    override func mouseDown(with event: NSEvent) {
+        if event.modifierFlags.contains(.option), controller?.model.state == .rest {
+            controller?.beginPillDrag(with: event)
+            return
+        }
+        super.mouseDown(with: event)
+    }
+
     override func rightMouseDown(with event: NSEvent) {
         controller?.showContextMenu(at: event)
     }
@@ -236,6 +244,16 @@ final class DeckHostingView<Content: View>: NSHostingView<Content> {
 
     @MainActor @preconcurrency required dynamic init?(coder: NSCoder) {
         fatalError("init(coder:) is not used")
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        if event.modifierFlags.contains(.option),
+           let content = superview as? DeckContentView,
+           content.controller?.model.state == .rest {
+            content.controller?.beginPillDrag(with: event)
+            return
+        }
+        super.mouseDown(with: event)
     }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
