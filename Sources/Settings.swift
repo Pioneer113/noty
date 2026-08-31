@@ -140,6 +140,13 @@ enum Settings {
     static let fanIdleTimeout: TimeInterval = 4
     static let noteIdleTimeout: TimeInterval = 60
 
+    /// Keep the deck fanned out instead of letting it fall back to the pill.
+    /// Only the *resting* state changes — notes still open and tidy away as usual.
+    static var deckAlwaysShown: Bool {
+        get { d.bool(forKey: "deckAlwaysShown") }
+        set { d.set(newValue, forKey: "deckAlwaysShown") }
+    }
+
     /// Labelled tabs, or bare colour chips that barely touch the screen.
     static var deckStyle: DeckStyle {
         get { DeckStyle(rawValue: d.string(forKey: "deckStyle") ?? "") ?? .tabs }

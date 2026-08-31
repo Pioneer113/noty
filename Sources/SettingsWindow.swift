@@ -99,6 +99,7 @@ struct ShortcutField: NSViewRepresentable {
 
 final class SettingsModel: ObservableObject {
     @Published var deckStyle: DeckStyle { didSet { Settings.deckStyle = deckStyle; apply() } }
+    @Published var alwaysShown: Bool    { didSet { Settings.deckAlwaysShown = alwaysShown; apply() } }
     @Published var onLeftEdge: Bool     { didSet { Settings.deckOnLeftEdge = onLeftEdge; apply() } }
     @Published var edgeWidth: Double    { didSet { Settings.edgeWidth = edgeWidth; apply() } }
     @Published var overFullScreen: Bool { didSet { Settings.showOverFullScreen = overFullScreen; apply() } }
@@ -126,6 +127,7 @@ final class SettingsModel: ObservableObject {
 
     init() {
         deckStyle = Settings.deckStyle
+        alwaysShown = Settings.deckAlwaysShown
         onLeftEdge = Settings.deckOnLeftEdge
         edgeWidth = Settings.edgeWidth
         overFullScreen = Settings.showOverFullScreen
@@ -247,6 +249,12 @@ struct SettingsView: View {
                             Text("How far from the edge the pointer wakes the deck — \(Int(model.edgeWidth)) pt.")
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         }
+                    }
+                    VStack(alignment: .leading, spacing: 3) {
+                        Toggle("Keep the deck open", isOn: $model.alwaysShown)
+                        Text("Tabs stay on the edge with their labels showing, instead of folding back into the pill when the pointer leaves.")
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Toggle("Show over full-screen apps", isOn: $model.overFullScreen)
                     Toggle("Launch at login", isOn: $model.launchAtLogin)
