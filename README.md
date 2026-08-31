@@ -185,15 +185,42 @@ open build/Noty.app
 Sparkle is optional. Without `Sparkle/Sparkle.framework` the app still builds —
 `Updater.swift` compiles to a stub and the update menu says so.
 
+### Branches
+
+`dev` is where work lands — every pull request targets it, and CI builds it.
+`main` is the release branch: **merging `dev` into `main` is what cuts a
+release**, so nothing reaches `main` until it has been tried.
+
 ### Releasing
 
 ```sh
-git tag v1.0.1 && git push origin v1.0.1
+git checkout main && git merge --no-ff dev -m "release: 1.2.0"
+git push origin main
 ```
 
 That fires `.github/workflows/release.yml`, which builds the app, packages a
 DMG, signs it with the EdDSA key, writes `appcast.xml`, publishes a GitHub
 Release and commits the appcast so installed copies can see the update.
+
+The version comes from **`release: X.Y.Z`** anywhere in the merge commit
+message. Leave it out and the patch is bumped from the newest tag, which is
+what a hotfix wants. A version that is already tagged is a no-op, so re-running
+the job is safe.
+
+Release notes are written by `scripts/make-release-notes.sh` from the pull
+requests the release actually contains — matched by whether their merge commit
+is reachable, not by date, since work merged into `dev` sits unreleased until
+`dev` lands. Every one of them is listed with a link and its author, on the
+release page and in the Sparkle update dialog. Run it yourself to see what the
+next release will say:
+
+```sh
+VERSION=1.2.0 ./scripts/make-release-notes.sh
+```
+
+Documentation, the site, the media and the appcast are excluded from the
+trigger, so a README push to `main` never cuts a release. `workflow_dispatch`
+with a version is the manual escape hatch.
 
 It needs one repository secret, **`SPARKLE_PRIVATE_KEY`** — the contents of the
 key `scripts/fetch-sparkle.sh`'s toolchain generated. The matching public key is
