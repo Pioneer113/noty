@@ -69,6 +69,7 @@ Inside a note:
 | `⌘T` | turn the current line into a task, or strip the checkbox off |
 | `⌘⌫` | delete, with ten seconds to undo |
 | `⇧⌘A` | archive the note you are looking at |
+| — | every shortcut here can be rebound in Settings |
 | `⌘P` | pin the note so it stays open |
 | `⌃+` / `⌃-` | bigger / smaller note text |
 
@@ -100,14 +101,18 @@ import reads that back. All Notes shows a `done/total` count per note.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
-- **Settings** (`⌘,`, or right-click the pill). Rebind the shortcuts, pick the
-  note face and size, set how far from the edge the pointer wakes the deck,
-  and switch Markdown styling on or off. Everything applies immediately.
+- **Settings** (`⌘,`, the cog under the deck's `+`, or right-click the pill).
+  Rebind every shortcut, pick the note face, text size and note size, set how far
+  from the edge the pointer wakes the deck, and switch Markdown styling on or
+  off. Everything applies immediately.
+- **Open on hover.** Off by default: turn it on and resting the pointer on a tab
+  opens that note without a click.
 - **Markdown as you type.** `# headings`, `**bold**`, `*italic*`, `` `code` ``,
   `~~struck~~`, `> quotes` and `- bullets` are styled in place. The markers are
   dimmed rather than hidden, so the stored text is exactly what you typed and
   exports unchanged.
-- **Drag to reorder.** Press and hold a tab, then drag it up or down the deck.
+- **Drag to reorder.** Drag a tab up or down and the others step aside to show
+  where it will land.
 - **Pin a note to keep it open.** The pin in a note's header (or `⌘P`) stops it
   being dismissed by anything you did not aim at it — clicking away in another
   app, or leaving it idle. Esc and Close still close it. Pinned tabs carry a dot,
