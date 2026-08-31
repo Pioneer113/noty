@@ -218,6 +218,14 @@ next release will say:
 VERSION=1.2.0 ./scripts/make-release-notes.sh
 ```
 
+Work that ships without a pull request of its own being merged — a cherry-pick,
+or a branch only part of which was taken — is credited with a trailer on the
+commit that takes it, which the same script turns into a **Thanks** section:
+
+```
+Thanks-to: @handle — what it was for
+```
+
 Documentation, the site, the media and the appcast are excluded from the
 trigger, so a README push to `main` never cuts a release. `workflow_dispatch`
 with a version is the manual escape hatch.
