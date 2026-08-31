@@ -111,11 +111,12 @@ import reads that back. All Notes shows a `done/total` count per note.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
-- **Settings** (`⌘,`, the cog under the deck's `+`, or right-click the pill).
-  Rebind every shortcut, pick the note face, text size and note size, scale the
-  deck, keep it open, choose which display carries it, set how far from the edge
-  the pointer wakes the deck, and switch Markdown styling on or off. Everything
-  applies immediately.
+- **Settings** (`⌘,`, the cog under the deck's `+`, or right-click the pill) —
+  four tabs. *Shortcuts* rebinds all twelve. *Deck* covers style, size, which
+  display carries it, the edge, how far from it the pointer wakes the deck, and
+  whether the tabs stay out. *Notes* has the face, text size, note size and
+  Markdown. *Updates* shows the version, when it last checked, and checks now.
+  Everything applies immediately.
 - **Open on hover.** Off by default: turn it on and resting the pointer on a tab
   opens that note without a click.
 - **Markdown as you type.** `# headings`, `**bold**`, `*italic*`, `` `code` ``,

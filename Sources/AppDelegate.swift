@@ -16,6 +16,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             allNotes: { [weak self] in self?.openAllNotes() },
             archive:  { [weak self] in self?.openArchive() }
         )
+
+        // Sparkle only schedules its background checks once the controller
+        // exists. Until now nothing touched it before the pill's context menu
+        // was opened, so a user who never right-clicked was never offered an
+        // update however long the app ran.
+        _ = Updater.shared
     }
 
     func applicationWillTerminate(_ notification: Notification) {

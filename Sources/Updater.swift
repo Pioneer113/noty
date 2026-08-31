@@ -21,6 +21,9 @@ final class Updater {
         set { controller.updater.automaticallyChecksForUpdates = newValue }
     }
 
+    /// When Sparkle last looked, for the Updates pane in Settings.
+    var lastCheck: Date? { controller.updater.lastUpdateCheckDate }
+
     /// The deck is an accessory app, so raise it before Sparkle shows a window.
     func checkForUpdates() {
         NSApp.activate()
@@ -41,6 +44,8 @@ final class Updater {
         get { false }
         set { _ = newValue }
     }
+    var lastCheck: Date? { nil }
+
     func checkForUpdates() {
         NSApp.activate()
         let a = NSAlert()
