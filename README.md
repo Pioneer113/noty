@@ -154,6 +154,7 @@ and macOS 15+.
 ./build.sh                   # release build → build/Noty.app
 ./build.sh debug             # fast, unoptimised
 ./build.sh release run       # build, then relaunch
+./scripts/test-editor.sh     # focused editor range/style/input regression checks
 open build/Noty.app
 ```
 

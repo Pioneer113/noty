@@ -276,7 +276,8 @@ struct LibraryDetail: View {
             .background(pal.dash.opacity(0.12))
 
             NoteTextView(text: $text, ink: NSColor(pal.ink), bridge: bridge,
-                         autofocus: false, fontSize: Settings.noteFontSize)
+                         autofocus: false, fontSize: Settings.noteFontSize,
+                         markdownEnabled: Settings.markdownStyling)
                 .background(pal.paper)
         }
         .onAppear { text = note.body }
