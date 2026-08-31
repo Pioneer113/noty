@@ -15,6 +15,23 @@ enum Settings {
         set { d.set(newValue, forKey: "deckOnLeftEdge") }
     }
 
+    /// Vertical position of the pill along the screen edge (0.0 = bottom, 1.0 = top).
+    static var deckYRatio: CGFloat {
+        get {
+            if let v = d.object(forKey: "deckYRatio") as? CGFloat {
+                return min(max(v, 0.0), 1.0)
+            }
+            return 0.5
+        }
+        set { d.set(min(max(newValue, 0.0), 1.0), forKey: "deckYRatio") }
+    }
+
+    /// Target display: "all" for all screens, "main" for primary, or "id:<displayID>".
+    static var displayTarget: String {
+        get { d.string(forKey: "displayTarget") ?? "all" }
+        set { d.set(newValue, forKey: "displayTarget") }
+    }
+
     /// Max tabs the fan shows before collapsing the remainder into "+N".
     /// Five keeps every tab at full size instead of squeezing the deck.
     static let fanLimit = 5

@@ -100,6 +100,7 @@ struct ShortcutField: NSViewRepresentable {
 final class SettingsModel: ObservableObject {
     @Published var deckStyle: DeckStyle { didSet { Settings.deckStyle = deckStyle; apply() } }
     @Published var onLeftEdge: Bool     { didSet { Settings.deckOnLeftEdge = onLeftEdge; apply() } }
+    @Published var displayTarget: String { didSet { Settings.displayTarget = displayTarget; apply() } }
     @Published var edgeWidth: Double    { didSet { Settings.edgeWidth = edgeWidth; apply() } }
     @Published var overFullScreen: Bool { didSet { Settings.showOverFullScreen = overFullScreen; apply() } }
     @Published var launchAtLogin: Bool  { didSet { Settings.launchAtLogin = launchAtLogin } }
@@ -129,6 +130,7 @@ final class SettingsModel: ObservableObject {
     init() {
         deckStyle = Settings.deckStyle
         onLeftEdge = Settings.deckOnLeftEdge
+        displayTarget = Settings.displayTarget
         edgeWidth = Settings.edgeWidth
         overFullScreen = Settings.showOverFullScreen
         launchAtLogin = Settings.launchAtLogin
@@ -245,6 +247,21 @@ struct SettingsView: View {
                             ForEach(DeckStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                         }.labelsHidden().pickerStyle(.segmented).frame(width: 240)
                     }
+                    if NSScreen.screens.count > 1 {
+                        row("Display") {
+                            Picker("", selection: $model.displayTarget) {
+                                Text("All Displays").tag("all")
+                                Text("Main Display").tag("main")
+                                ForEach(NSScreen.screens, id: \.self) { s in
+                                    if let id = (s.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value {
+                                        let name = s.localizedName
+                                        let title = s == NSScreen.main ? "\(name) (Main)" : name
+                                        Text(title).tag("id:\(id)")
+                                    }
+                                }
+                            }.labelsHidden().frame(width: 220)
+                        }
+                    }
                     row("Edge") {
                         Picker("", selection: $model.onLeftEdge) {
                             Text("Right").tag(false); Text("Left").tag(true)
@@ -266,6 +283,9 @@ struct SettingsView: View {
                     }
                     Toggle("Show over full-screen apps", isOn: $model.overFullScreen)
                     Toggle("Launch at login", isOn: $model.launchAtLogin)
+                    Text("Hold ⌥ Option and drag the pill to move it to any screen, edge, or height.")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                        .padding(.top, 2)
                 }
 
                 group("Notes", "Type and formatting inside a note.") {

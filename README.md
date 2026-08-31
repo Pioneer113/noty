@@ -94,9 +94,10 @@ import reads that back. All Notes shows a `done/total` count per note.
   in All Notes → Archive, restorable at any time.
 - **All Notes** (`⌥⌘A`) — one window, search across every note body and title,
   with an editable detail pane.
-- **Multi-display** — each screen gets its own dormant pill on its right edge.
-  The deck opens on whichever screen the pointer enters and the others stay shut.
-  Displays are tracked by `CGDirectDisplayID`, so hot-plugging rebuilds the decks.
+- **Multi-display & relocation** — show the deck on all displays, only the main
+  screen, or a specific monitor. Hold `⌥ Option` and drag the pill to dock it to
+  any edge, height, or display. Displays are tracked by `CGDirectDisplayID`, so
+  hot-plugging rebuilds the decks with graceful fallback.
 - **Over full-screen apps** — right-click the pill → *Show over full-screen apps*.
   This raises the panel to `.statusBar` level; `.floating` alone does not draw
   over a full-screen space.
