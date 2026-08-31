@@ -279,6 +279,11 @@ final class DeckController: NSObject {
         setState(.fan)
     }
 
+    /// Whether an ⌥-click should pick the deck up. "Keep the deck open" makes
+    /// the fan the resting state, and the pill is then never the thing on screen
+    /// to grab — without this the two preferences cancel each other out.
+    var canBeginPillDrag: Bool { model.state == restingState }
+
     /// Interactive drag triggered when clicking the pill with ⌥ Option held.
     /// Moves the pill across screens and snaps to the nearest edge (left/right) at the cursor's height.
     func beginPillDrag(with initialEvent: NSEvent) {
@@ -306,8 +311,14 @@ final class DeckController: NSObject {
         let mask: NSEvent.EventTypeMask = [.leftMouseDragged, .leftMouseUp, .flagsChanged]
 
         while true {
-            guard let event = NSApp.nextEvent(matching: mask, until: .distantFuture, inMode: .eventTracking, dequeue: true) else {
-                break
+            // A nested modal loop on the main thread: waiting on .distantFuture
+            // wedges the whole app if the mouse-up is ever delivered elsewhere,
+            // so poll and check the button instead.
+            guard let event = NSApp.nextEvent(matching: mask,
+                                              until: Date(timeIntervalSinceNow: 0.1),
+                                              inMode: .eventTracking, dequeue: true) else {
+                if NSEvent.pressedMouseButtons & 1 == 0 { break }
+                continue
             }
             if event.type == .leftMouseUp {
                 break
@@ -338,7 +349,11 @@ final class DeckController: NSObject {
 
         Settings.deckOnLeftEdge = targetOnLeft
         Settings.deckYRatio = targetYRatio
-        if let id = (targetScreen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value {
+        // Only follow the drag across displays when the deck is already pinned to
+        // one. Doing it under "All Displays" would take the deck off every other
+        // screen as a side effect of nudging the pill up a bit.
+        if Settings.displayTarget != "all",
+           let id = (targetScreen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value {
             Settings.displayTarget = "id:\(id)"
         }
         (NSApp.delegate as? AppDelegate)?.refreshDecks()

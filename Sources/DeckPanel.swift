@@ -226,7 +226,7 @@ final class DeckContentView: NSView {
     override func mouseExited(with event: NSEvent) { controller?.pointerExited() }
 
     override func mouseDown(with event: NSEvent) {
-        if event.modifierFlags.contains(.option), controller?.model.state == .rest {
+        if event.modifierFlags.contains(.option), controller?.canBeginPillDrag == true {
             controller?.beginPillDrag(with: event)
             return
         }
@@ -259,7 +259,7 @@ final class DeckHostingView<Content: View>: NSHostingView<Content> {
     override func mouseDown(with event: NSEvent) {
         if event.modifierFlags.contains(.option),
            let content = superview as? DeckContentView,
-           content.controller?.model.state == .rest {
+           content.controller?.canBeginPillDrag == true {
             content.controller?.beginPillDrag(with: event)
             return
         }
