@@ -71,6 +71,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         deckManager.refreshAll()
     }
 
+    @objc func setDeckScale(_ sender: NSMenuItem) {
+        guard let scale = sender.representedObject as? Double else { return }
+        Settings.deckScale = scale
+        deckManager.refreshAll()
+    }
+
     @objc func toggleDeckEdge() {
         Settings.deckOnLeftEdge.toggle()
         deckManager.refreshAll()

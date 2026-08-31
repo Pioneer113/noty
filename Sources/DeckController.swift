@@ -36,6 +36,9 @@ final class DeckModel: ObservableObject {
 
     // Mirrored from Settings so SwiftUI re-renders when a preference flips.
     @Published var style: DeckStyle = Settings.deckStyle
+    /// DeckGeom reads the scale straight from Settings; this mirror exists purely
+    /// so a change to it invalidates the views that measure against it.
+    @Published var scale: Double = Settings.deckScale
     @Published var onLeftEdge: Bool = Settings.deckOnLeftEdge
     @Published var fontSize: Double = Settings.noteFontSize
     @Published var markdown: Bool = Settings.markdownStyling
@@ -47,6 +50,7 @@ final class DeckModel: ObservableObject {
 
     func syncPreferences() {
         style = Settings.deckStyle
+        scale = Settings.deckScale
         onLeftEdge = Settings.deckOnLeftEdge
         fontSize = Settings.noteFontSize
         markdown = Settings.markdownStyling
@@ -424,6 +428,18 @@ final class DeckController: NSObject {
         }
         textItem.submenu = textMenu
         menu.addItem(textItem)
+
+        let sizeItem = NSMenuItem(title: "Deck size", action: nil, keyEquivalent: "")
+        let sizeMenu = NSMenu()
+        for entry in Settings.deckSizes {
+            let it = NSMenuItem(title: entry.name, action: #selector(AppDelegate.setDeckScale(_:)),
+                                keyEquivalent: "")
+            it.representedObject = entry.scale
+            it.state = abs(Settings.deckScale - entry.scale) < 0.01 ? .on : .off
+            sizeMenu.addItem(it)
+        }
+        sizeItem.submenu = sizeMenu
+        menu.addItem(sizeItem)
 
         let leftEdge = NSMenuItem(title: "Dock deck to left edge",
                                   action: #selector(AppDelegate.toggleDeckEdge), keyEquivalent: "")
