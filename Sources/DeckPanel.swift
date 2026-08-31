@@ -71,8 +71,6 @@ enum DeckGeom {
 
     // Fan
     static var tabWidth: CGFloat { s(30) }
-    static var tabHeightMax: CGFloat { s(118) }
-    static var tabHeightMin: CGFloat { s(58) }
     static var tabGap: CGFloat { s(7) }
     /// How far the next tab laps over the one before it.
     static var tabLap: CGFloat { s(40) }
@@ -118,7 +116,6 @@ enum DeckGeom {
     static var chipGap: CGFloat { s(6) }
     static var fanWidth: CGFloat { s(50) }
     static var plusSize: CGFloat { s(28) }
-    static var plusInset: CGFloat { s(14) }
     static var plusGap: CGFloat { s(12) }
     // The cog sits under the plus, so it has to grow with it.
     static var cogSize: CGFloat { s(24) }

@@ -66,9 +66,6 @@ struct NoteColor {
         NoteColor(name: "Slate",  paper: hex(0xCBD6E2), dash: hex(0x4E6579), ink: hex(0x1A242E)),
     ]
 
-    /// A touch darker at the foot of the sheet, the way paper catches light.
-    var paperShade: Color { paper.opacity(1) }
-
     static func at(_ i: Int) -> NoteColor { all[((i % all.count) + all.count) % all.count] }
 
     private static func hex(_ v: UInt32) -> Color {
