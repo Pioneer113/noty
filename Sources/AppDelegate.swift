@@ -71,6 +71,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         deckManager.refreshAll()
     }
 
+    @objc func toggleDeckAlwaysShown() {
+        Settings.deckAlwaysShown.toggle()
+        deckManager.refreshAll()
+    }
+
     @objc func toggleDeckEdge() {
         Settings.deckOnLeftEdge.toggle()
         deckManager.refreshAll()

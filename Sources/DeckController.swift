@@ -36,6 +36,7 @@ final class DeckModel: ObservableObject {
 
     // Mirrored from Settings so SwiftUI re-renders when a preference flips.
     @Published var style: DeckStyle = Settings.deckStyle
+    @Published var alwaysShown: Bool = Settings.deckAlwaysShown
     @Published var onLeftEdge: Bool = Settings.deckOnLeftEdge
     @Published var fontSize: Double = Settings.noteFontSize
     @Published var markdown: Bool = Settings.markdownStyling
@@ -56,6 +57,7 @@ final class DeckModel: ObservableObject {
 
     func syncPreferences() {
         style = Settings.deckStyle
+        alwaysShown = Settings.deckAlwaysShown
         onLeftEdge = Settings.deckOnLeftEdge
         fontSize = Settings.noteFontSize
         markdown = Settings.markdownStyling
@@ -86,6 +88,10 @@ final class DeckController: NSObject {
 
     weak var manager: DeckManager?
 
+    /// Where the deck sits when nothing is happening: the pill, or the tabs
+    /// themselves once the user has asked for them to stay put.
+    private var restingState: DeckState { Settings.deckAlwaysShown ? .fan : .rest }
+
     var screen: NSScreen? {
         NSScreen.screens.first {
             ($0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value == displayID
@@ -106,6 +112,7 @@ final class DeckController: NSObject {
         container.addSubview(hosting)
 
         panel.contentView = container
+        model.state = restingState
         layout()
         panel.orderFrontRegardless()
 
@@ -210,8 +217,11 @@ final class DeckController: NSObject {
         } else {
             removeKeyMonitor(); removeOutsideMonitor()
         }
-        if new == .rest { stopIdleWatch() } else { startIdleWatch() }
-        if new == .rest { model.showAll = false; model.findQuery = nil }
+        // A deck that is already at rest has nothing to tidy away, so the poll
+        // only runs above the resting state — with the tabs kept open, that means
+        // it runs for an open note and not for the fan.
+        if new.rank > restingState.rank { startIdleWatch() } else { stopIdleWatch() }
+        if new == restingState { model.showAll = false; model.findQuery = nil }
     }
 
     /// Anything the user does keeps the deck awake.
@@ -342,14 +352,14 @@ final class DeckController: NSObject {
     }
 
     func pointerExited() {
-        guard model.state == .fan else { return }   // an open note stays open until Esc
+        guard model.state == .fan, restingState != .fan else { return }   // an open note stays open until Esc
         // Tracking areas fire spuriously across a resize, so confirm the pointer really left.
         exitWork?.cancel()
         let work = DispatchWorkItem { [weak self] in
             guard let self, self.model.state == .fan, !self.model.isDragging else { return }
             if !self.hotZone.contains(NSEvent.mouseLocation) {
                 DeckLog.line("pointerExited confirmed")
-                self.setState(.rest)
+                self.setState(self.restingState)
             }
         }
         exitWork = work
@@ -374,7 +384,7 @@ final class DeckController: NSObject {
             // If the pointer is already away from the edge, the deck follows it
             // shut on the next poll rather than hanging around.
         } else {
-            setState(.rest)
+            setState(restingState)
         }
     }
 
@@ -388,11 +398,30 @@ final class DeckController: NSObject {
     /// Dismiss the whole deck, note and tabs together.
     func dismiss() {
         let wasExpanded = model.state.expandedID != nil
-        setState(.rest)
+        setState(restingState)
         if wasExpanded { NSApp.deactivate() }
     }
 
-    func collapseToRest() { setState(.rest) }
+    func collapseToRest() { setState(restingState) }
+
+    /// Adopt a change to the preference: fan out, or fall back to the pill once
+    /// the pointer is off the deck. Called after Settings writes it.
+    func applyRestingState() {
+        switch model.state {
+        case .rest where restingState == .fan:
+            setState(.fan)
+        case .fan where restingState == .rest:
+            // The pointer may still be on the deck, and yanking the tabs out from
+            // under it reads as a glitch. Restart the idle poll instead and let it
+            // fold the deck away the moment the pointer leaves — without this the
+            // fan stays stuck open, because the poll is not running while the deck
+            // is at its resting state.
+            if hotZone.contains(NSEvent.mouseLocation) { startIdleWatch() }
+            else { setState(.rest) }
+        default:
+            break
+        }
+    }
 
     // MARK: Key handling for the expanded note
 
@@ -508,6 +537,11 @@ final class DeckController: NSObject {
         }
         textItem.submenu = textMenu
         menu.addItem(textItem)
+
+        let keepOpen = NSMenuItem(title: "Keep deck open",
+                                  action: #selector(AppDelegate.toggleDeckAlwaysShown), keyEquivalent: "")
+        keepOpen.state = Settings.deckAlwaysShown ? .on : .off
+        menu.addItem(keepOpen)
 
         let leftEdge = NSMenuItem(title: "Dock deck to left edge",
                                   action: #selector(AppDelegate.toggleDeckEdge), keyEquivalent: "")
@@ -649,7 +683,9 @@ final class DeckManager {
 
     func refreshAll() {
         rebuild()
-        decks.values.forEach { $0.model.syncPreferences(); $0.refreshLevel(); $0.layout() }
+        decks.values.forEach {
+            $0.model.syncPreferences(); $0.refreshLevel(); $0.layout(); $0.applyRestingState()
+        }
     }
 
     /// Deck on the screen holding the pointer, else the first available deck.
