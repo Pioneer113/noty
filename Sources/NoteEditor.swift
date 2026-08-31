@@ -181,6 +181,10 @@ struct NoteTextView: NSViewRepresentable {
     let bridge: EditorBridge
     var autofocus: Bool
     var fontSize: CGFloat = 13.5
+    /// Everything that affects how the text is drawn, as one cheap value. The
+    /// alternative — comparing a freshly built NSColor and NSFont — is not
+    /// reliably equal, so a full restyle ran on every re-render.
+    var styleToken: String = ""
 
     static func bodyFont(_ size: CGFloat) -> NSFont { Ink.body(size) }
 
@@ -226,6 +230,7 @@ struct NoteTextView: NSViewRepresentable {
 
         scroll.documentView = tv
         bridge.textView = tv
+        context.coordinator.appliedStyle = styleToken
         Self.styleTasks(tv, ink: ink, size: fontSize)
         if autofocus {
             DispatchQueue.main.async { tv.window?.makeFirstResponder(tv) }
@@ -235,15 +240,20 @@ struct NoteTextView: NSViewRepresentable {
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {
         guard let tv = scroll.documentView as? NSTextView else { return }
+        let coordinator = context.coordinator
+
         if tv.string != text {
             tv.string = text
             Self.styleTasks(tv, ink: ink, size: fontSize)
         }
-        let want = Self.bodyFont(fontSize)
-        if tv.textColor != ink || tv.font != want {
+        // Restyle only when the way text is drawn has actually changed. This runs
+        // on every re-render, and a resize re-renders every frame — rewriting the
+        // whole text storage at 60fps is what made dragging the corner stutter.
+        if coordinator.appliedStyle != styleToken {
+            coordinator.appliedStyle = styleToken
             tv.textColor = ink
             tv.insertionPointColor = ink
-            tv.font = want
+            tv.font = Self.bodyFont(fontSize)
             Self.styleTasks(tv, ink: ink, size: fontSize)
         }
         if bridge.textView !== tv { bridge.textView = tv }
@@ -272,7 +282,10 @@ struct NoteTextView: NSViewRepresentable {
         storage.addAttribute(.font, value: font, range: full)
 
         let ns = storage.string as NSString
-        if Settings.markdownStyling {
+        // Six regex passes over the whole note, on every keystroke. Most notes
+        // contain no Markdown at all, and a single scan for the punctuation that
+        // could possibly match is far cheaper than finding that out six times.
+        if Settings.markdownStyling, ns.rangeOfCharacter(from: Self.markdownChars).location != NSNotFound {
             let line = ns.lineRange(for: NSRange(location: min(caret.location, ns.length), length: 0))
             markdown(storage, ns, full, ink: ink, size: size, revealing: line)
         }
@@ -296,6 +309,8 @@ struct NoteTextView: NSViewRepresentable {
                                     length: min(caret.length, end - min(caret.location, end))))
         tv.window?.invalidateCursorRects(for: tv)
     }
+
+    private static let markdownChars = CharacterSet(charactersIn: "*_`~#>-+")
 
     /// Inline Markdown. The source stays plain text — markers are dimmed rather
     /// than hidden, so what you typed is always what is stored.
@@ -381,6 +396,7 @@ struct NoteTextView: NSViewRepresentable {
 
     final class Coordinator: NSObject, NSTextViewDelegate {
         let parent: NoteTextView
+        var appliedStyle: String?
         init(_ p: NoteTextView) { parent = p }
 
         private var lastLine = NSRange(location: NSNotFound, length: 0)
@@ -447,6 +463,7 @@ struct NoteEditorView: View {
         HStack(spacing: 0) {
             if onRight { gutter; sheet } else { sheet; gutter }
         }
+        .frame(width: deck.noteSize.width, height: deck.noteSize.height)
         .background(
             noteShape
                 .fill(LinearGradient(colors: [pal.paper, pal.paper.opacity(0.88)],
@@ -477,7 +494,8 @@ struct NoteEditorView: View {
             if deck.findQuery != nil { findBar }
             NoteTextView(text: $text, ink: NSColor(pal.ink),
                          bridge: deck.bridge, autofocus: true,
-                         fontSize: deck.fontSize)
+                         fontSize: deck.fontSize,
+                         styleToken: "\(note.color)|\(deck.fontSize)|\(Settings.noteFontName)|\(deck.markdown)")
             footer
         }
     }

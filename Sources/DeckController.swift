@@ -39,6 +39,15 @@ final class DeckModel: ObservableObject {
     @Published var onLeftEdge: Bool = Settings.deckOnLeftEdge
     @Published var fontSize: Double = Settings.noteFontSize
     @Published var markdown: Bool = Settings.markdownStyling
+    @Published var noteSize = Settings.noteSize
+    @Published var openOnHover: Bool = Settings.openOnHover
+    /// Set while a tab is being dragged. The deck must not tidy itself away
+    /// mid-drag just because the pointer strayed out of the edge strip.
+    @Published var isDragging = false
+    /// The note's height at the moment it opened. Its top is anchored from this
+    /// and nothing else — recomputing the position from a height that changes
+    /// mid-resize makes the note jump the instant the drag ends.
+    @Published var openedHeight: CGFloat = Settings.noteSize.height
     /// Published by the controller the instant the panel is resized. Reading this
     /// instead of a GeometryReader matters: the reader reports the *previous* size
     /// for a frame or two after a resize, and the deck lays out against the wrong
@@ -50,6 +59,8 @@ final class DeckModel: ObservableObject {
         onLeftEdge = Settings.deckOnLeftEdge
         fontSize = Settings.noteFontSize
         markdown = Settings.markdownStyling
+        noteSize = Settings.noteSize
+        openOnHover = Settings.openOnHover
     }
 }
 
@@ -139,6 +150,8 @@ final class DeckController: NSObject {
             // window resize and SwiftUI's relayout land in different frames, and
             // for one frame the deck draws against the panel's far edge — which
             // looks exactly like the note flying in from mid-screen.
+            // Width follows the note's live size, so a resize drag does not have
+            // to round-trip through UserDefaults to widen the panel.
             let w = DeckGeom.expandedWidth
             frame = NSRect(x: onRight ? full.maxX - w : full.minX,
                            y: vis.minY, width: w, height: vis.height)
@@ -214,9 +227,11 @@ final class DeckController: NSObject {
             let now = NSEvent.mouseLocation
             // The panel is wider than the deck, so the tracking area cannot tell us
             // the pointer has left the tabs; compare against the strip instead.
-            if self.model.state == .fan, !self.hotZone.contains(now) {
+            if self.model.state == .fan, !self.model.isDragging,
+               !self.hotZone.contains(now) {
                 self.collapse(); return
             }
+            if self.model.isDragging { self.lastActivity = Date(); return }
             if abs(now.x - self.lastPointer.x) > 2 || abs(now.y - self.lastPointer.y) > 2 {
                 self.lastPointer = now
                 self.lastActivity = Date()
@@ -263,7 +278,7 @@ final class DeckController: NSObject {
         // Tracking areas fire spuriously across a resize, so confirm the pointer really left.
         exitWork?.cancel()
         let work = DispatchWorkItem { [weak self] in
-            guard let self, self.model.state == .fan else { return }
+            guard let self, self.model.state == .fan, !self.model.isDragging else { return }
             if !self.hotZone.contains(NSEvent.mouseLocation) {
                 DeckLog.line("pointerExited confirmed")
                 self.setState(.rest)
@@ -275,6 +290,7 @@ final class DeckController: NSObject {
 
     func expand(_ id: String) {
         noteActivity()
+        model.openedHeight = Settings.noteSize.height
         manager?.deckDidActivate(self)
         setState(.expanded(id))
         NSApp.activate()

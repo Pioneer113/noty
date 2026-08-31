@@ -130,6 +130,42 @@ enum Settings {
         set { d.set(newValue, forKey: "edgeWidth") }
     }
 
+    // A short list of note sizes. Dragging a corner meant re-laying out a window
+    // and a text view on every pointer move; picking from four does it once.
+    static let noteSizes: [(name: String, size: CGSize)] = [
+        ("Small",  CGSize(width: 400, height: 320)),
+        ("Medium", CGSize(width: 460, height: 380)),
+        ("Large",  CGSize(width: 560, height: 470)),
+        ("Huge",   CGSize(width: 680, height: 560)),
+    ]
+
+    static var noteSizeIndex: Int {
+        get {
+            if let stored = d.object(forKey: "noteSizeIndex") as? Int,
+               noteSizes.indices.contains(stored) { return stored }
+            // Carry over a size that was previously dragged: pick the nearest.
+            let w = d.double(forKey: "noteWidth")
+            guard w > 0 else { return 1 }
+            let nearest = noteSizes.enumerated()
+                .min { abs($0.element.size.width - w) < abs($1.element.size.width - w) }
+            return nearest?.offset ?? 1
+        }
+        set { d.set(min(max(newValue, 0), noteSizes.count - 1), forKey: "noteSizeIndex") }
+    }
+
+    static var noteSize: CGSize { noteSizes[noteSizeIndex].size }
+
+    /// Open a note by hovering its tab instead of clicking it. Off by default:
+    /// the deck is meant to stay quiet until you ask it for something.
+    static var openOnHover: Bool {
+        get { d.object(forKey: "openOnHover") as? Bool ?? false }
+        set { d.set(newValue, forKey: "openOnHover") }
+    }
+
+    /// How long the pointer must rest on a tab before it opens, so sweeping past
+    /// the deck does not open every note in turn.
+    static let openOnHoverDelay: TimeInterval = 0.4
+
     /// Style Markdown inline — headings, emphasis, code, quotes.
     static var markdownStyling: Bool {
         get { d.object(forKey: "markdownStyling") as? Bool ?? true }

@@ -37,7 +37,8 @@ struct DeckLayout {
         guard count > 0 else { return 0 }
         return CGFloat(count - 1) * pitch + itemHeight
             + (hasMore ? moreGap + moreHeight : 0)
-            + DeckGeom.plusGap + DeckGeom.plusSize
+            + DeckGeom.plusGap + DeckGeom.plusSize      // new note
+            + DeckGeom.cogGap + DeckGeom.cogSize        // settings
     }
 
     var top: CGFloat { max(12, (panelHeight - stackHeight) / 2) }
@@ -87,11 +88,22 @@ enum DeckGeom {
 
     /// Rendered width of a tab label, used to size the strip that shows it.
     /// Must use the same face the tab draws with or the strip will not fit.
+    ///
+    /// Measured once per title per face: the deck asks for this on every layout
+    /// pass, and text measurement is not cheap enough to repeat that often.
+    private static var labelCache: [String: CGFloat] = [:]
+
     static func labelWidth(_ title: String) -> CGFloat {
         let text = title.uppercased() as NSString
         guard text.length > 0 else { return 0 }
-        return text.size(withAttributes: [.font: Ink.tabNSFont]).width
+        let font = Ink.tabNSFont
+        let key = "\(font.fontName)|\(font.pointSize)|\(text)"
+        if let hit = labelCache[key] { return hit }
+        let w = text.size(withAttributes: [.font: font]).width
             + Ink.tabTracking * CGFloat(text.length)
+        if labelCache.count > 400 { labelCache.removeAll(keepingCapacity: true) }
+        labelCache[key] = w
+        return w
     }
     static let chipWidth: CGFloat = 30
     static let chipHeight: CGFloat = 24
@@ -100,6 +112,9 @@ enum DeckGeom {
     static let plusSize: CGFloat = 28
     static let plusInset: CGFloat = 14
     static let plusGap: CGFloat = 12
+    static let cogSize: CGFloat = 24
+    static let cogGap: CGFloat = 8
+
     static let moreTabHeight: CGFloat = 34
 
     /// The deck may claim at most this much of the screen before tabs start shrinking.
@@ -110,12 +125,14 @@ enum DeckGeom {
     static let gutterWidth: CGFloat = 30
 
     // Expanded — the note slides clear of the deck
-    static let editorWidth: CGFloat = 460
-    static let editorHeight: CGFloat = 380
+    static var editorWidth: CGFloat { Settings.noteSize.width }
+    static var editorHeight: CGFloat { Settings.noteSize.height }
     /// The open note runs to the screen edge and covers its own tab, exactly as a
     /// pulled sticky would — so there is no gap between note and deck to tune.
-    /// A little wider than the note so the lean has somewhere to go.
+    /// A little wider than the note so the lean has somewhere to go, and it grows
+    /// with the note when the corner is dragged.
     static var expandedWidth: CGFloat { max(fanWidth, editorWidth) + 22 }
+
 
     static func pillHeight(noteCount: Int) -> CGFloat {
         let shown = min(noteCount, maxDashes)

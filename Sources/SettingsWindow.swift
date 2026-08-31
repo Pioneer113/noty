@@ -107,6 +107,8 @@ final class SettingsModel: ObservableObject {
     @Published var fontName: String     { didSet { Settings.noteFontName = fontName; apply() } }
     @Published var fontSize: Double     { didSet { Settings.noteFontSize = fontSize; apply() } }
     @Published var markdown: Bool       { didSet { Settings.markdownStyling = markdown; apply() } }
+    @Published var noteSizeIndex: Int   { didSet { Settings.noteSizeIndex = noteSizeIndex; apply() } }
+    @Published var openOnHover: Bool    { didSet { Settings.openOnHover = openOnHover; apply() } }
 
     @Published var scNewNote: Shortcut  { didSet { Settings.scNewNote = scNewNote; HotKeys.shared.reload() } }
     @Published var scAllNotes: Shortcut { didSet { Settings.scAllNotes = scAllNotes; HotKeys.shared.reload() } }
@@ -133,6 +135,8 @@ final class SettingsModel: ObservableObject {
         fontName = Settings.noteFontName
         fontSize = Settings.noteFontSize
         markdown = Settings.markdownStyling
+        noteSizeIndex = Settings.noteSizeIndex
+        openOnHover = Settings.openOnHover
         scNewNote = Settings.scNewNote
         scAllNotes = Settings.scAllNotes
         scArchive = Settings.scArchive
@@ -174,7 +178,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
 
     func show() {
         if window == nil {
-            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 520, height: 620),
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 620, height: 640),
                              styleMask: [.titled, .closable, .fullSizeContentView],
                              backing: .buffered, defer: false)
             w.title = "Noty Settings"
@@ -204,25 +208,32 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 26) {
+            VStack(alignment: .leading, spacing: 22) {
                 group("Shortcuts", "Click a field and press the keys; ⌫ clears one.") {
-                    subhead("From any app")
-                    shortcutRow("New note", model.scNewNote, "new") { model.scNewNote = $0 }
-                    shortcutRow("All Notes", model.scAllNotes, "all") { model.scAllNotes = $0 }
-                    shortcutRow("Archive window", model.scArchive, "archive") { model.scArchive = $0 }
-
-                    subhead("In an open note").padding(.top, 4)
-                    shortcutRow("Close", model.scClose, "close", bare: true) { model.scClose = $0 }
-                    shortcutRow("Archive this note", model.scArchiveNote, "archiveNote", bare: true) { model.scArchiveNote = $0 }
-                    shortcutRow("Delete", model.scDelete, "delete", bare: true) { model.scDelete = $0 }
-                    shortcutRow("Find in note", model.scFind, "find", bare: true) { model.scFind = $0 }
-                    shortcutRow("Toggle task", model.scTask, "task", bare: true) { model.scTask = $0 }
-                    shortcutRow("Pin", model.scPin, "pin", bare: true) { model.scPin = $0 }
-                    shortcutRow("Cycle colour", model.scColour, "colour", bare: true) { model.scColour = $0 }
-                    shortcutRow("Bigger text", model.scBigger, "bigger", bare: true) { model.scBigger = $0 }
-                    shortcutRow("Smaller text", model.scSmaller, "smaller", bare: true) { model.scSmaller = $0 }
-
-                    Text("These only fire while a note is open, so a key with no modifier is fine here.")
+                    // Two columns: twelve stacked rows made the window scroll for
+                    // what is really a reference table.
+                    HStack(alignment: .top, spacing: 26) {
+                        VStack(alignment: .leading, spacing: 7) {
+                            subhead("From any app")
+                            shortcutRow("New note", model.scNewNote, "new") { model.scNewNote = $0 }
+                            shortcutRow("All Notes", model.scAllNotes, "all") { model.scAllNotes = $0 }
+                            shortcutRow("Archive window", model.scArchive, "archive") { model.scArchive = $0 }
+                            Spacer(minLength: 0)
+                        }
+                        VStack(alignment: .leading, spacing: 7) {
+                            subhead("In an open note")
+                            shortcutRow("Close", model.scClose, "close", bare: true) { model.scClose = $0 }
+                            shortcutRow("Archive note", model.scArchiveNote, "archiveNote", bare: true) { model.scArchiveNote = $0 }
+                            shortcutRow("Delete", model.scDelete, "delete", bare: true) { model.scDelete = $0 }
+                            shortcutRow("Find", model.scFind, "find", bare: true) { model.scFind = $0 }
+                            shortcutRow("Toggle task", model.scTask, "task", bare: true) { model.scTask = $0 }
+                            shortcutRow("Pin", model.scPin, "pin", bare: true) { model.scPin = $0 }
+                            shortcutRow("Cycle colour", model.scColour, "colour", bare: true) { model.scColour = $0 }
+                            shortcutRow("Bigger text", model.scBigger, "bigger", bare: true) { model.scBigger = $0 }
+                            shortcutRow("Smaller text", model.scSmaller, "smaller", bare: true) { model.scSmaller = $0 }
+                        }
+                    }
+                    Text("In-note shortcuts only fire while a note is open, so a key with no modifier is fine there.")
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 2)
@@ -248,6 +259,11 @@ struct SettingsView: View {
                                 .font(.system(size: 11)).foregroundStyle(.secondary)
                         }
                     }
+                    VStack(alignment: .leading, spacing: 3) {
+                        Toggle("Open a note by hovering its tab", isOn: $model.openOnHover)
+                        Text("Rest on a tab and it opens, no click needed. Off by default.")
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                    }
                     Toggle("Show over full-screen apps", isOn: $model.overFullScreen)
                     Toggle("Launch at login", isOn: $model.launchAtLogin)
                 }
@@ -258,7 +274,15 @@ struct SettingsView: View {
                             ForEach(Ink.faces, id: \.body) { Text($0.name).tag($0.body) }
                         }.labelsHidden().frame(width: 200)
                     }
-                    row("Size") {
+                    row("Note size") {
+                        Picker("", selection: $model.noteSizeIndex) {
+                            ForEach(Array(Settings.noteSizes.enumerated()), id: \.offset) { i, s in
+                                Text(s.name).tag(i)
+                            }
+                        }
+                        .labelsHidden().pickerStyle(.segmented).frame(width: 300)
+                    }
+                    row("Text size") {
                         HStack(spacing: 10) {
                             Slider(value: $model.fontSize,
                                    in: Settings.fontRange.lowerBound...Settings.fontRange.upperBound,
@@ -276,11 +300,11 @@ struct SettingsView: View {
                     }
                 }
             }
-            .padding(.horizontal, 30)
-            .padding(.top, 42)
+            .padding(.horizontal, 28)
+            .padding(.top, 40)
             .padding(.bottom, 30)
         }
-        .frame(width: 520, height: 620)
+        .frame(width: 620, height: 640)
     }
 
     // MARK: pieces
@@ -315,13 +339,14 @@ struct SettingsView: View {
     private func shortcutRow(_ label: String, _ value: Shortcut, _ key: String,
                              bare: Bool = false,
                              _ set: @escaping (Shortcut) -> Void) -> some View {
-        HStack(spacing: 14) {
-            Text(label).font(.system(size: 12.5)).frame(width: 130, alignment: .leading)
+        HStack(spacing: 10) {
+            Text(label).font(.system(size: 12)).frame(width: 96, alignment: .leading)
             ShortcutField(shortcut: value, allowsBareKeys: bare, onChange: set)
-                .frame(width: 128, height: 26)
+                .frame(width: 96, height: 24)
             if model.duplicate(of: value, ignoring: key) {
-                Label("Already used", systemImage: "exclamationmark.triangle.fill")
-                    .font(.system(size: 11)).foregroundStyle(.orange)
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 10)).foregroundStyle(.orange)
+                    .help("Already used by another shortcut")
             }
             Spacer(minLength: 0)
         }

@@ -105,13 +105,19 @@ enum Ink {
         NoteFace(name: "Menlo",        body: "Menlo-Regular",        tab: "Menlo-Bold",           bump: -1),
     ]
 
-    static var faces: [NoteFace] {
+    /// Installed faces do not change while the app runs, and this is asked for on
+    /// every text render — resolving it each time cost nine font lookups a call.
+    static let faces: [NoteFace] =
         allFaces.filter { $0.body.isEmpty || NSFont(name: $0.body, size: 12) != nil }
-    }
+
+    private static var faceCache: (name: String, face: NoteFace)?
 
     static var face: NoteFace {
         let want = Settings.noteFontName
-        return faces.first { $0.body == want } ?? faces[0]
+        if let cached = faceCache, cached.name == want { return cached.face }
+        let resolved = faces.first { $0.body == want } ?? faces[0]
+        faceCache = (want, resolved)
+        return resolved
     }
 
     /// The hand (or face) note bodies are set in.
@@ -135,6 +141,16 @@ enum Ink {
             return .systemFont(ofSize: 9, weight: .semibold)
         }
         return font
+    }
+
+    /// The body face as a SwiftUI font. Falls back to the system font by name,
+    /// which `Font.custom` cannot express for the system face.
+    static func bodyFont(_ size: CGFloat) -> Font {
+        let f = face
+        guard !f.body.isEmpty, NSFont(name: f.body, size: size) != nil else {
+            return .system(size: size)
+        }
+        return .custom(f.body, size: size + f.bump)
     }
 
     static var tabFont: Font {
