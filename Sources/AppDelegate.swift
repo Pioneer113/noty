@@ -80,7 +80,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let target = sender.representedObject as? String else { return }
         Settings.displayTarget = target
         SettingsWindow.shared.syncPreferences()
-        deckManager.refreshAll()
     }
 
     @objc func toggleLaunchAtLogin() {
