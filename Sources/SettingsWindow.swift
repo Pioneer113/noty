@@ -101,6 +101,7 @@ final class SettingsModel: ObservableObject {
     @Published var deckStyle: DeckStyle { didSet { Settings.deckStyle = deckStyle; apply() } }
     @Published var onLeftEdge: Bool     { didSet { Settings.deckOnLeftEdge = onLeftEdge; apply() } }
     @Published var displayTarget: String { didSet { Settings.displayTarget = displayTarget; apply() } }
+    @Published var screens: [NSScreen] = NSScreen.screens
     @Published var edgeWidth: Double    { didSet { Settings.edgeWidth = edgeWidth; apply() } }
     @Published var overFullScreen: Bool { didSet { Settings.showOverFullScreen = overFullScreen; apply() } }
     @Published var launchAtLogin: Bool  { didSet { Settings.launchAtLogin = launchAtLogin } }
@@ -131,6 +132,7 @@ final class SettingsModel: ObservableObject {
         deckStyle = Settings.deckStyle
         onLeftEdge = Settings.deckOnLeftEdge
         displayTarget = Settings.displayTarget
+        screens = NSScreen.screens
         edgeWidth = Settings.edgeWidth
         overFullScreen = Settings.showOverFullScreen
         launchAtLogin = Settings.launchAtLogin
@@ -152,6 +154,12 @@ final class SettingsModel: ObservableObject {
         scBigger = Settings.scBigger
         scSmaller = Settings.scSmaller
         loading = false
+
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil, queue: .main) { [weak self] _ in
+                self?.screens = NSScreen.screens
+            }
     }
 
     private func apply() {
@@ -177,6 +185,10 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     static let shared = SettingsWindow()
     private var window: NSWindow?
     private let model = SettingsModel()
+
+    func syncPreferences() {
+        model.displayTarget = Settings.displayTarget
+    }
 
     func show() {
         if window == nil {
@@ -247,12 +259,12 @@ struct SettingsView: View {
                             ForEach(DeckStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                         }.labelsHidden().pickerStyle(.segmented).frame(width: 240)
                     }
-                    if NSScreen.screens.count > 1 {
+                    if model.screens.count > 1 {
                         row("Display") {
                             Picker("", selection: $model.displayTarget) {
                                 Text("All Displays").tag("all")
                                 Text("Main Display").tag("main")
-                                ForEach(NSScreen.screens, id: \.self) { s in
+                                ForEach(model.screens, id: \.self) { s in
                                     if let id = (s.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value {
                                         let name = s.localizedName
                                         let title = s == NSScreen.main ? "\(name) (Main)" : name

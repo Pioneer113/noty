@@ -79,6 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func setDisplayTarget(_ sender: NSMenuItem) {
         guard let target = sender.representedObject as? String else { return }
         Settings.displayTarget = target
+        SettingsWindow.shared.syncPreferences()
         deckManager.refreshAll()
     }
 

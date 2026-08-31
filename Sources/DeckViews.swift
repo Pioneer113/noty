@@ -68,7 +68,9 @@ struct DeckRootView: View {
     }
 
     private func fanTop(_ lay: DeckLayout, panelHeight h: CGFloat) -> CGFloat {
-        let pillCenter = (1.0 - Settings.deckYRatio) * h
+        let pillH = DeckGeom.pillHeight(noteCount: max(1, store.active.count))
+        let availableH = max(1, h - pillH)
+        let pillCenter = (1.0 - Settings.deckYRatio) * availableH + pillH / 2
         let ideal = pillCenter - lay.stackHeight / 2
         return min(max(12, ideal), max(12, h - lay.stackHeight - 12))
     }
