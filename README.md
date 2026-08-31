@@ -47,6 +47,15 @@ Right-click the pill → **Deck style**:
 The open note carries its own tab along as a left gutter, separated by a dashed
 rule, so it reads as growing out of the deck rather than floating beside it.
 
+**Deck size** scales every metric off one multiplier — tab width, the lap between
+tabs, the label type, the chips and the resting pill — so the deck grows without
+drifting out of proportion with itself. Settings → Deck → *Size* (70–180%), or
+right-click the pill → *Deck size* for the four presets.
+
+**Keep deck open** makes the fan the resting state instead of the pill, so the
+tabs and their labels stay on the edge without being hovered first. Off by
+default; notes still open, close and idle away exactly as before.
+
 ## Shortcuts
 
 All of these are listed in Settings (`⌘,`), and the first four can be rebound
@@ -103,9 +112,10 @@ import reads that back. All Notes shows a `done/total` count per note.
   over a full-screen space.
 - **Autosave** 250 ms after you stop typing, and again on close.
 - **Settings** (`⌘,`, the cog under the deck's `+`, or right-click the pill).
-  Rebind every shortcut, pick the note face, text size and note size, set how far
-  from the edge the pointer wakes the deck, and switch Markdown styling on or
-  off. Everything applies immediately.
+  Rebind every shortcut, pick the note face, text size and note size, scale the
+  deck, keep it open, choose which display carries it, set how far from the edge
+  the pointer wakes the deck, and switch Markdown styling on or off. Everything
+  applies immediately.
 - **Open on hover.** Off by default: turn it on and resting the pointer on a tab
   opens that note without a click.
 - **Markdown as you type.** `# headings`, `**bold**`, `*italic*`, `` `code` ``,
