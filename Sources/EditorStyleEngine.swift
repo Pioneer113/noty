@@ -50,6 +50,20 @@ enum EditorStyleEngine {
         pattern: "^>[ \\t]?(.*)$", options: [.anchorsMatchLines])
     private static let bullet = try! NSRegularExpression(
         pattern: "^[ \\t]*([-*+])[ \\t]+", options: [.anchorsMatchLines])
+    private static let link = try! NSRegularExpression(
+        pattern: "\\[([^\\]\\n]+)\\]\\(([^)\\s]+)\\)")
+
+    /// A note is ordinary text, and text can carry any scheme somebody typed or
+    /// imported. Only these three are ever made clickable — the rest are styled
+    /// and inert, so a note can never become a launcher for something else.
+    private static let openableSchemes: Set<String> = ["http", "https", "mailto"]
+
+    /// The destination of a Markdown link, or nil if it is not one of ours.
+    static func openableURL(_ raw: String) -> URL? {
+        guard let url = URL(string: raw), let scheme = url.scheme?.lowercased(),
+              openableSchemes.contains(scheme) else { return nil }
+        return url
+    }
 
     /// The complete line containing a UTF-16 location. At EOF after a trailing
     /// newline this correctly returns the zero-length final line.
@@ -107,6 +121,11 @@ enum EditorStyleEngine {
             storage.removeAttribute(.obliqueness, range: range)
             storage.removeAttribute(.backgroundColor, range: range)
             storage.removeAttribute(.notyHidden, range: range)
+            // Both belong to links. Styling is line-scoped, so an attribute left
+            // behind when the syntax around it is deleted never gets cleaned up
+            // by a later pass — the line would stay underlined and clickable.
+            storage.removeAttribute(.underlineStyle, range: range)
+            storage.removeAttribute(.link, range: range)
             storage.addAttribute(.foregroundColor, value: ink, range: range)
             storage.addAttribute(.font, value: font, range: range)
 
@@ -131,8 +150,10 @@ enum EditorStyleEngine {
         return planned
     }
 
-    /// The only characters any of the seven expressions below can match on.
-    private static let markdownChars = CharacterSet(charactersIn: "*_`~#>-+")
+    /// The only characters any of the expressions below can match on. A link
+    /// needs its opening bracket, and nothing else in a URL is Markdown at all —
+    /// leaving `[` out here silently switched links off.
+    private static let markdownChars = CharacterSet(charactersIn: "*_`~#>-+[")
 
     private static func markdown(_ storage: NSTextStorage, _ fragment: String,
                                  offset: Int, ink: NSColor, size: CGFloat,
@@ -175,6 +196,19 @@ enum EditorStyleEngine {
             storage.addAttribute(.font, value: heavier(size + bump, bodyFont: bodyFont),
                                  range: global(match.range))
             dim(match.range(at: 1))
+        }
+        // [label](url) — the label is what stays; the brackets and the URL go the
+        // way of every other marker.
+        each(link) { match in
+            let label = match.range(at: 1)
+            storage.addAttribute(.underlineStyle,
+                                 value: NSUnderlineStyle.single.rawValue, range: global(label))
+            if let url = openableURL(local.substring(with: match.range(at: 2))) {
+                storage.addAttribute(.link, value: url, range: global(label))
+            }
+            dim(NSRange(location: match.range.location, length: 1))
+            dim(NSRange(location: label.upperBound,
+                        length: match.range.upperBound - label.upperBound))
         }
         each(bold) { match in
             storage.addAttribute(.font, value: heavier(size, bodyFont: bodyFont),

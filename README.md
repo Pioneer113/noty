@@ -119,9 +119,14 @@ import reads that back. All Notes shows a `done/total` count per note.
 - **Open on hover.** Off by default: turn it on and resting the pointer on a tab
   opens that note without a click.
 - **Markdown as you type.** `# headings`, `**bold**`, `*italic*`, `` `code` ``,
-  `~~struck~~`, `> quotes` and `- bullets` are styled in place. The markers are
-  dimmed rather than hidden, so the stored text is exactly what you typed and
-  exports unchanged.
+  `~~struck~~`, `> quotes`, `- bullets` and `[links](https://example.com)` are
+  styled in place. Markers are hidden on every line but the one the caret is on,
+  which shows them dimmed so they can still be edited — the stored text is
+  exactly what you typed and exports unchanged.
+- **⌘-click a link to open it.** A plain click still places the caret, since a
+  note is a thing you edit first. Only `http`, `https` and `mailto` are ever
+  made clickable; anything else is styled and inert, so an imported note can
+  never turn into a launcher.
 - **Drag to reorder.** Drag a tab up or down and the others step aside to show
   where it will land.
 - **Pin a note to keep it open.** The pin in a note's header (or `⌘P`) stops it

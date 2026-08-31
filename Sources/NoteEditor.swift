@@ -120,7 +120,23 @@ final class TaskTextView: NSTextView {
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         if toggleBox(at: point) { return }
+        // ⌘-click follows a link. A plain click has to keep placing the caret —
+        // the note is a thing you edit first and read second.
+        if event.modifierFlags.contains(.command), openLink(at: point) { return }
         super.mouseDown(with: event)
+    }
+
+    /// Returns true when the click landed on a link and opened it.
+    private func openLink(at point: NSPoint) -> Bool {
+        guard let storage = textStorage, storage.length > 0 else { return false }
+        let index = min(characterIndexForInsertion(at: point), storage.length - 1)
+        guard let value = storage.attribute(.link, at: index, effectiveRange: nil) else { return false }
+        // The engine only ever stores a vetted URL here, but this is the point
+        // where a note's own text would reach NSWorkspace, so it is checked again.
+        let raw = (value as? URL)?.absoluteString ?? value as? String
+        guard let raw, let url = EditorStyleEngine.openableURL(raw) else { return false }
+        NSWorkspace.shared.open(url)
+        return true
     }
 
     override func resetCursorRects() {
@@ -234,6 +250,11 @@ struct NoteTextView: NSViewRepresentable {
         tv.isAutomaticDashSubstitutionEnabled = false
         tv.isAutomaticTextReplacementEnabled = false
         tv.isContinuousSpellCheckingEnabled = true
+        // AppKit paints .link ranges system blue by default, which fights every
+        // paper colour in the deck. Keep the underline and the cursor, and let
+        // the note's own ink through.
+        tv.linkTextAttributes = [.underlineStyle: NSUnderlineStyle.single.rawValue,
+                                 .cursor: NSCursor.pointingHand]
         tv.string = text
 
         scroll.documentView = tv

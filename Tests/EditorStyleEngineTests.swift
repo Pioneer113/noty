@@ -16,6 +16,8 @@ struct EditorStyleEngineTests {
         testCoordinatorStylesOnlyAfterCompletedTextChange()
         testScopedMarkdownAndTasks()
         testMarkdownCanBeRemovedIncrementally()
+        testMarkdownLinks()
+        testStaleLinkAttributesAreCleared()
         testLongNotePlanningStaysLocal()
 
         guard failures == 0 else {
@@ -280,6 +282,81 @@ struct EditorStyleEngineTests {
         _ = apply(to: tv, ranges: [line], revealing: nil, markdown: false)
         check(tv.textStorage?.attribute(.notyHidden, at: 0, effectiveRange: nil) == nil,
               "turning Markdown off must remove hidden markers in the styled range")
+    }
+
+    private static func testMarkdownLinks() {
+        let source = "see [the repo](https://github.com/aimen08/noty) here\nplain"
+        let text = source as NSString
+        let tv = makeTextView(source)
+        guard let storage = tv.textStorage else {
+            check(false, "test text view must have text storage")
+            return
+        }
+
+        let line = text.lineRange(for: text.range(of: "repo"))
+        _ = apply(to: tv, ranges: [line], revealing: nil, markdown: true)
+
+        let label = text.range(of: "the repo")
+        check(storage.attribute(.underlineStyle, at: label.location,
+                                effectiveRange: nil) != nil,
+              "a link label must be underlined")
+        let target = storage.attribute(.link, at: label.location, effectiveRange: nil) as? URL
+        check(target?.absoluteString == "https://github.com/aimen08/noty",
+              "a link label must carry its destination")
+
+        check(storage.attribute(.notyHidden, at: text.range(of: "[the").location,
+                                effectiveRange: nil) != nil,
+              "the opening bracket must be hidden off the caret line")
+        check(storage.attribute(.notyHidden, at: text.range(of: "github").location,
+                                effectiveRange: nil) != nil,
+              "the URL must be hidden off the caret line")
+        check(storage.attribute(.notyHidden, at: label.location,
+                                effectiveRange: nil) == nil,
+              "the label itself must never be hidden")
+
+        _ = apply(to: tv, ranges: [line], revealing: line, markdown: true)
+        check(storage.attribute(.notyHidden, at: text.range(of: "github").location,
+                                effectiveRange: nil) == nil,
+              "the caret line must reveal the URL so it can be edited")
+
+        // A note is text, and text can name any scheme. Only the three we open
+        // ever become clickable.
+        let hostile = "[run](javascript:alert(1)) and [file](file:///etc/passwd)"
+        let hostileText = hostile as NSString
+        let hostileView = makeTextView(hostile)
+        _ = apply(to: hostileView, ranges: [NSRange(location: 0, length: hostileText.length)],
+                  revealing: nil, markdown: true)
+        check(hostileView.textStorage?.attribute(
+                .link, at: hostileText.range(of: "run").location, effectiveRange: nil) == nil,
+              "a javascript: link must be styled but never clickable")
+        check(hostileView.textStorage?.attribute(
+                .link, at: hostileText.range(of: "file").location, effectiveRange: nil) == nil,
+              "a file: link must be styled but never clickable")
+        check(EditorStyleEngine.openableURL("mailto:someone@example.com") != nil,
+              "mailto must stay openable")
+    }
+
+    private static func testStaleLinkAttributesAreCleared() {
+        // Styling is line-scoped: nothing else will ever come back to this line
+        // to tidy up, so breaking the syntax has to clear the attributes itself.
+        let tv = makeTextView("[label](https://example.com)\nplain")
+        guard let storage = tv.textStorage else {
+            check(false, "test text view must have text storage")
+            return
+        }
+        let whole = NSRange(location: 0, length: (tv.string as NSString).length)
+        let line = (tv.string as NSString).lineRange(for: NSRange(location: 0, length: 0))
+        _ = apply(to: tv, ranges: [line], revealing: nil, markdown: true)
+        check(storage.attribute(.link, at: 1, effectiveRange: nil) != nil,
+              "setup must produce a link")
+
+        storage.replaceCharacters(in: whole, with: "label https://example.com\nplain")
+        let broken = (tv.string as NSString).lineRange(for: NSRange(location: 0, length: 0))
+        _ = apply(to: tv, ranges: [broken], revealing: nil, markdown: true)
+        check(storage.attribute(.link, at: 0, effectiveRange: nil) == nil,
+              "breaking the syntax must clear .link")
+        check(storage.attribute(.underlineStyle, at: 0, effectiveRange: nil) == nil,
+              "breaking the syntax must clear the underline")
     }
 
     private static func testLongNotePlanningStaysLocal() {
