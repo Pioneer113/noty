@@ -298,6 +298,7 @@ struct LibraryDetail: View {
 
             NoteTextView(text: $text, ink: NSColor(pal.ink), bridge: bridge,
                          autofocus: false, fontSize: Settings.noteFontSize,
+                         markdownEnabled: Settings.markdownStyling,
                          styleToken: "\(note.color)|\(Settings.noteFontSize)|\(Settings.noteFontName)|\(Settings.markdownStyling)")
                 .background(pal.paper)
         }

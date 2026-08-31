@@ -39,7 +39,7 @@ struct DeckRootView: View {
                     FanColumn(deck: deck, controller: controller,
                               notes: visible, hiddenCount: showsMoreTab ? hiddenCount : 0,
                               layout: lay, onRight: onRight)
-                        .padding(.top, lay.top)
+                        .padding(.top, fanTop(lay, panelHeight: h))
                 } else {
                     PillView(notes: store.active)
                         .padding(.top, max(0, (h - DeckGeom.pillHeight(noteCount: max(1, store.active.count))) / 2))
@@ -67,13 +67,22 @@ struct DeckRootView: View {
         .animation(.easeInOut(duration: 0.22), value: deck.style)
     }
 
+    private func fanTop(_ lay: DeckLayout, panelHeight h: CGFloat) -> CGFloat {
+        let pillH = DeckGeom.pillHeight(noteCount: max(1, store.active.count))
+        let availableH = max(1, h - pillH)
+        let pillCenter = (1.0 - Settings.deckYRatio) * availableH + pillH / 2
+        let ideal = pillCenter - lay.stackHeight / 2
+        return min(max(12, ideal), max(12, h - lay.stackHeight - 12))
+    }
+
     /// Keep the open note level with its own tab, without letting it run off-screen.
     private func editorTop(_ lay: DeckLayout, id: String) -> CGFloat {
         let idx = visible.firstIndex { $0.id == id } ?? 0
-        // Anchored to the height the note had when it opened, so dragging the
-        // corner grows it downward instead of re-centring it on its tab.
         let h = deck.openedHeight
-        let ideal = lay.center(idx) - h / 2
+        let fTop = fanTop(lay, panelHeight: lay.panelHeight)
+        let strip = idx == lay.count - 1 ? lay.itemHeight : lay.pitch
+        let stripCenter = fTop + CGFloat(idx) * lay.pitch + strip / 2
+        let ideal = stripCenter - h / 2
         let lowest = max(10, lay.panelHeight - h - 10)
         return min(max(10, ideal), lowest)
     }
