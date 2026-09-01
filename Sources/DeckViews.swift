@@ -172,7 +172,13 @@ struct FanColumn: View {
             .overlay(alignment: onRight ? .trailing : .leading) { spine }
 
             if let previewNote = activePreviewNote {
-                NotePreviewCard(note: previewNote, onRight: onRight) {
+                NotePreviewCard(note: previewNote, onRight: onRight, onHoverChanged: { inside in
+                    if inside {
+                        previewWork?.cancel()
+                    } else {
+                        cancelHoverPreview(for: previewNote.id)
+                    }
+                }) {
                     previewNoteID = nil
                     open(previewNote)
                 }
@@ -344,7 +350,7 @@ struct FanColumn: View {
             }
         }
         previewWork = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
     }
 
     private var dragFrom: Int? { notes.firstIndex { $0.id == dragID } }
@@ -547,6 +553,7 @@ struct ChipTab: View {
 struct NotePreviewCard: View {
     let note: Note
     let onRight: Bool
+    var onHoverChanged: ((Bool) -> Void)? = nil
     let action: () -> Void
 
     var body: some View {
@@ -622,6 +629,7 @@ struct NotePreviewCard: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .onHover { onHoverChanged?($0) }
     }
 }
 
