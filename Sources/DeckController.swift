@@ -216,7 +216,7 @@ final class DeckController: NSObject {
                 self.layout()
             }
             shrinkWork = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.30, execute: work)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: work)
         }
 
         noteActivity()

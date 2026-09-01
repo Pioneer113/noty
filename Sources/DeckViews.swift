@@ -319,6 +319,11 @@ struct FanColumn: View {
 
     private func scheduleHoverPreview(_ note: Note) {
         previewWork?.cancel()
+        if previewNoteID != nil, previewNoteID != note.id {
+            withAnimation(.easeOut(duration: 0.10)) {
+                previewNoteID = nil
+            }
+        }
         let work = DispatchWorkItem {
             guard dragID == nil, deck.state.expandedID == nil, deck.tabPreview else { return }
             withAnimation(.spring(response: 0.22, dampingFraction: 0.85)) {
@@ -333,13 +338,13 @@ struct FanColumn: View {
         previewWork?.cancel()
         let work = DispatchWorkItem {
             if id == nil || previewNoteID == id {
-                withAnimation(.easeOut(duration: 0.14)) {
+                withAnimation(.easeOut(duration: 0.12)) {
                     previewNoteID = nil
                 }
             }
         }
         previewWork = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.06, execute: work)
     }
 
     private var dragFrom: Int? { notes.firstIndex { $0.id == dragID } }
